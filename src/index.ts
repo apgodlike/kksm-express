@@ -19,7 +19,8 @@ app.use(
       "http://192.168.29.126:3000",
       "http://192.168.140.1:3000",
       "https://kanch-react.vercel.app",
-      "https:kksm.ddns.net",
+      "https://kksm.ddns.net",
+      "https://49.47.217.4",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   })
