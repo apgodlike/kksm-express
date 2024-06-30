@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import userRouter from "./routes/user";
 import searchRouter from "./routes/search";
 import profileRouter from "./routes/profile";
-import authRoutes from "./routes/authRoutes";
 import { authenticateToken } from "./middlewares/authMiddleware";
+import cors from "cors";
 
 const port = process.env.PORT || 3010;
 
@@ -12,7 +12,17 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.29.126:3000",
+      "http://192.168.140.1:3000",
+      "https://kanch-react.vercel.app",
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  })
+);
 // post login, post register, post details, get details of particular profile
 // /api/v1/user
 // app.use("/api/v1/auth", authRoutes);
