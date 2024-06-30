@@ -1,0 +1,54 @@
+import { Request, NextFunction, Response } from "express";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config";
+import { WORKER_JWT_SECRET } from "../config";
+
+export function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const authHeader = req.headers["authorization"] ?? "";
+  try {
+    console.log("authMiddleware");
+
+    const decoded = jwt.verify(authHeader, JWT_SECRET);
+    console.log(decoded);
+
+    // @ts-ignore
+    if (decoded.userId) {
+      // @ts-ignore
+      req.userId = decoded.userId;
+      return next();
+    } else {
+      return res.status(403).json({ message: "your are not logged in" });
+    }
+  } catch (error) {
+    return res.status(403).json({ message: "your are not logged in" });
+  }
+}
+
+export function workerMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const authHeader = req.headers["authorization"] ?? "";
+  try {
+    console.log("workerMiddleware");
+
+    const decoded = jwt.verify(authHeader, WORKER_JWT_SECRET);
+    console.log(decoded);
+
+    // @ts-ignore
+    if (decoded.userId) {
+      // @ts-ignore
+      req.userId = decoded.userId;
+      return next();
+    } else {
+      return res.status(403).json({ message: "your are not logged in" });
+    }
+  } catch (error) {
+    return res.status(403).json({ message: "your are not logged in" });
+  }
+}
