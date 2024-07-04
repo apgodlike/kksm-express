@@ -54,8 +54,7 @@ export const saveProfileByUserId = async (
 };
 
 export const getProfileById = async (id: number): Promise<Profile | null> => {
-  console.log(id);
   return await prisma.profile.findUnique({
-    where: { id },
+    where: { user_id: id },
   });
 };

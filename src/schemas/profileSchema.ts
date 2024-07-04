@@ -31,11 +31,11 @@ export const profileSchema = z.object({
   employment_type: z.nativeEnum(EmploymentType).optional(),
   employed_in: z.string().optional(),
   annual_income: z.nativeEnum(AnnualIncome).optional(),
-  image_1: z.string().optional(), // Adjust max length as per your requirements
-  image_2: z.string().optional(),
-  image_3: z.string().optional(),
-  image_4: z.string().optional(),
-  image_horoscope: z.string().optional(),
+  image_1: z.string().nullable().optional(), // Adjust max length as per your requirements
+  image_2: z.string().nullable().optional(),
+  image_3: z.string().nullable().optional(),
+  image_4: z.string().nullable().optional(),
+  image_horoscope: z.string().nullable().optional(),
 });
 
 // This type can be used for type checking in your controller/service

@@ -19,6 +19,6 @@ router.post(
 
 router.get("/id/1", getProfile);
 
-router.get("/getuserprofile", getUserProfile);
+router.get("/getuserprofile", authenticateToken, getUserProfile);
 
 export default router;

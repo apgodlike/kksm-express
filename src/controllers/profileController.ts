@@ -36,6 +36,8 @@ export const getProfile = async (req: Request, res: Response) => {
 export const getUserProfile = async (req: Request, res: Response) => {
   /// @ts-ignore
   const id = req.user.userId;
+  console.log("objectUser");
+  console.log(id);
   try {
     const profile = await getProfileById(id);
     if (profile) {
