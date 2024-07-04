@@ -32,3 +32,18 @@ export const getProfile = async (req: Request, res: Response) => {
     res.status(500).json({ error });
   }
 };
+
+export const getUserProfile = async (req: Request, res: Response) => {
+  /// @ts-ignore
+  const id = req.user.userId;
+  try {
+    const profile = await getProfileById(id);
+    if (profile) {
+      res.status(200).json(profile);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
