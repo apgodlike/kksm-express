@@ -3,6 +3,7 @@ import { validateRequest } from "../middlewares/validateRequest";
 import { profileSchema } from "../schemas/profileSchema";
 import {
   getProfile,
+  getSuggestedProfiles,
   getUserProfile,
   saveProfile,
 } from "../controllers/profileController";
@@ -17,8 +18,10 @@ router.post(
   saveProfile
 );
 
-router.get("/id/1", getProfile);
+router.get("/id/:id", getProfile);
 
 router.get("/getuserprofile", authenticateToken, getUserProfile);
+
+router.get("/suggestedprofiles/:page", authenticateToken, getSuggestedProfiles);
 
 export default router;

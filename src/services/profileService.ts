@@ -1,11 +1,11 @@
 import prisma from "../utils/prisma";
-import { Profile } from "@prisma/client";
+import { Gender, Profile } from "@prisma/client";
 
-export const getSuggestedProfiles = async () => {
-  await prisma.profile.findMany({
-    where: {},
-  });
-};
+// export const getSuggestedProfiles = async () => {
+//   await prisma.profile.findMany({
+//     where: {},
+//   });
+// };
 
 export const saveProfileByUserId = async (
   payload: any,
@@ -55,6 +55,58 @@ export const saveProfileByUserId = async (
 
 export const getProfileById = async (id: number): Promise<Profile | null> => {
   return await prisma.profile.findUnique({
+    where: { id },
+  });
+};
+
+export const getProfileByUserId = async (
+  id: number
+): Promise<Profile | null> => {
+  return await prisma.profile.findUnique({
     where: { user_id: id },
   });
+};
+
+export const getRandomTopProfiles = async (
+  page: number = 1,
+  pageSize: number = 10,
+  gender: Gender
+): Promise<
+  Pick<
+    Profile,
+    "name" | "date_of_birth" | "kulam" | "education" | "employment_type" | "id"
+  >[]
+> => {
+  const oppositeGender = gender === Gender.Male ? Gender.Female : Gender.Male;
+  const skip = (page - 1) * pageSize;
+
+  // Fetch pageSize + 1 profiles to check if there's a next page
+  const profiles = await prisma.profile.findMany({
+    skip: skip,
+    take: pageSize + 1,
+    orderBy: { created_at: "desc" },
+    where: {
+      gender: oppositeGender,
+    },
+    select: {
+      id: true,
+      name: true,
+      date_of_birth: true,
+      kulam: true,
+      education: true,
+      employment_type: true,
+    },
+  });
+
+  // Remove the extra profile we fetched
+  const hasNextPage = profiles.length > pageSize;
+  const pageProfiles = profiles.slice(0, pageSize);
+
+  // Randomize the order of the profiles
+  for (let i = pageProfiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pageProfiles[i], pageProfiles[j]] = [pageProfiles[j], pageProfiles[i]];
+  }
+
+  return pageProfiles;
 };
