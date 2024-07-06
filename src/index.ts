@@ -57,3 +57,5 @@ app.get("/test", authenticateToken, async (req, res) => {
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
+
+export default app;

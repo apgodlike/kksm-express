@@ -5,8 +5,6 @@ import {
   getRandomTopProfiles,
   saveProfileByUserId,
 } from "../services/profileService";
-import { profile } from "console";
-import prisma from "../utils/prisma";
 
 export const saveProfile = async (req: Request, res: Response) => {
   try {
