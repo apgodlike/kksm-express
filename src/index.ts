@@ -50,9 +50,13 @@ app.use("/api/v1/search", searchRouter);
 
 // GET - results
 
-app.get("/test", authenticateToken, async (req, res) => {
-  res.json({ message: "success" });
-});
+app.get(
+  "/test",
+  // authenticateToken,
+  async (req, res) => {
+    res.json({ message: "success" });
+  }
+);
 
 app.listen(port, () => {
   console.log(`listening at ${port}`);
