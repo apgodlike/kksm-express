@@ -1,3 +1,4 @@
+import { ProfilesResponse } from "../types";
 import prisma from "../utils/prisma";
 import { Gender, Profile } from "@prisma/client";
 
@@ -67,7 +68,45 @@ export const getProfileByUserId = async (
   });
 };
 
-export const getRandomTopProfiles = async (
+export const getSuggestedProfilesService = async (
+  page: number = 1,
+  pageSize: number = 10,
+  gender: Gender
+): Promise<ProfilesResponse> => {
+  const oppositeGender = getOppositeGender(gender);
+  const skip = (page - 1) * pageSize;
+
+  const profiles = await prisma.profile.findMany({
+    skip: skip,
+    take: pageSize,
+    orderBy: { created_at: "desc" },
+    where: {
+      gender: oppositeGender,
+    },
+    select: {
+      id: true,
+      name: true,
+      date_of_birth: true,
+      kulam: true,
+      education: true,
+      employment_type: true,
+    },
+  });
+
+  const totalProfiles = await prisma.profile.count({
+    where: {
+      gender: oppositeGender,
+    },
+  });
+
+  return {
+    profiles,
+    currentPage: page,
+    totalPages: Math.ceil(totalProfiles / pageSize),
+  };
+};
+
+export const getRandomTopProfilesRemove = async (
   page: number = 1,
   pageSize: number = 10,
   gender: Gender

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import {
   getProfileById,
   getProfileByUserId,
-  getRandomTopProfiles,
+  getSuggestedProfilesService,
   saveProfileByUserId,
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
@@ -54,11 +54,23 @@ export const getUserProfile = async (req: Request, res: Response) => {
 export const getSuggestedProfiles = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
-    const id = req.params.page;
-    const userProfile = await getProfileById(Number(id));
-    const page = Number(req.params.page);
+    const userProfileId = req.user.userId;
     // @ts-ignore
-    const profiles = await getRandomTopProfiles(page, 10, userProfile.gender);
+    // const id = req.params.page;
+    const userProfile = await getProfileByUserId(Number(userProfileId));
+    if (!userProfile) {
+      return res.status(404).json({ error: "User profile not found" });
+    }
+
+    const page = Number(req.params.page);
+    console.log("111");
+    console.log(req.params);
+    // @ts-ignore
+    const profiles = await getSuggestedProfilesService(
+      page,
+      10,
+      userProfile.gender
+    );
     if (profiles) {
       res.status(200).json(profiles);
     } else {
