@@ -77,7 +77,7 @@ export const getRandomTopProfiles = async (
     "name" | "date_of_birth" | "kulam" | "education" | "employment_type" | "id"
   >[]
 > => {
-  const oppositeGender = gender === Gender.Male ? Gender.Female : Gender.Male;
+  const oppositeGender = getOppositeGender(gender);
   const skip = (page - 1) * pageSize;
 
   // Fetch pageSize + 1 profiles to check if there's a next page
@@ -109,4 +109,8 @@ export const getRandomTopProfiles = async (
   }
 
   return pageProfiles;
+};
+
+export const getOppositeGender = (gender: Gender) => {
+  return gender === Gender.Male ? Gender.Female : Gender.Male;
 };

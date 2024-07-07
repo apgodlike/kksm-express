@@ -5,6 +5,7 @@ import {
   getRandomTopProfiles,
   saveProfileByUserId,
 } from "../services/profileService";
+import { regularSearchProfileService } from "../services/regularSearchService";
 
 export const saveProfile = async (req: Request, res: Response) => {
   try {
@@ -54,8 +55,6 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
     const id = req.params.page;
-    console.log("userProfile");
-    console.log(id);
     const userProfile = await getProfileById(Number(id));
     const page = Number(req.params.page);
     // @ts-ignore
@@ -65,6 +64,17 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
     } else {
       res.status(404).json({ error: "Profiles not found" });
     }
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
+
+export const postRegularSearchController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const response = await regularSearchProfileService(req.body);
   } catch (error) {
     res.status(500).json({ error });
   }
