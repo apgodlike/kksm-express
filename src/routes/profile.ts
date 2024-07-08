@@ -8,6 +8,7 @@ import {
   saveProfile,
 } from "../controllers/profileController";
 import { authenticateToken } from "../middlewares/authMiddleware";
+import { regularSearchController } from "../controllers/searchController";
 
 const router = Router();
 
@@ -23,5 +24,7 @@ router.get("/id/:id", getProfile);
 router.get("/getuserprofile", authenticateToken, getUserProfile);
 
 router.get("/suggestedprofiles/:page", authenticateToken, getSuggestedProfiles);
+
+router.post("/regularsearch/:page", authenticateToken, regularSearchController);
 
 export default router;

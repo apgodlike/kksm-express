@@ -1,52 +1,34 @@
 import { PrismaClient, Gender, Prisma } from "@prisma/client";
+import { PaginatedResult, RegularSearchParams } from "../types";
 
 const prisma = new PrismaClient();
 
-interface SearchParams {
-  ageFrom?: number;
-  ageTo?: number;
-  location?: string;
-  gender: Gender;
-  page: number;
-  pageSize: number;
-}
-
-interface PaginatedResult<T> {
-  data: T[];
-  totalCount: number;
-  totalPages: number;
-  currentPage: number;
-}
-
 export const regularSearchProfileService = async (
-  params: SearchParams
+  params: RegularSearchParams
 ): Promise<PaginatedResult<any>> => {
-  const { ageFrom, ageTo, location, gender, page, pageSize } = params;
+  const { age_from, age_to, location, gender, page, page_size } = params;
 
   // Calculate date range for age
   const currentDate = new Date();
-  const fromDate = ageTo
+  const fromDate = age_to
     ? new Date(
-        currentDate.getFullYear() - ageTo,
+        currentDate.getFullYear() - age_to,
         currentDate.getMonth(),
         currentDate.getDate()
       )
     : undefined;
-  const toDate = ageFrom
+  const toDate = age_from
     ? new Date(
-        currentDate.getFullYear() - ageFrom,
+        currentDate.getFullYear() - age_from,
         currentDate.getMonth(),
         currentDate.getDate()
       )
     : undefined;
-
-  // Determine opposite gender
-  const oppositeGender = gender === Gender.Male ? Gender.Female : Gender.Male;
 
   try {
     // Create the where clause
     const whereClause: Prisma.ProfileWhereInput = {
-      gender: oppositeGender,
+      gender,
       ...(location && {
         location: {
           contains: location,
@@ -65,6 +47,8 @@ export const regularSearchProfileService = async (
     // Get total count
     const totalCount = await prisma.profile.count({ where: whereClause });
 
+    console.log("regularSearchProfileService");
+    console.log(totalCount);
     // Get paginated profiles
     const profiles = await prisma.profile.findMany({
       where: whereClause,
@@ -79,8 +63,8 @@ export const regularSearchProfileService = async (
           },
         },
       },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      skip: (page - 1) * page_size,
+      take: page_size,
     });
 
     // Calculate age for each profile
@@ -90,7 +74,7 @@ export const regularSearchProfileService = async (
     }));
 
     // Calculate total pages
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = Math.ceil(totalCount / page_size);
 
     return {
       data: profilesWithAge,
