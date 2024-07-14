@@ -10,12 +10,10 @@ import {
 export const regularSearchController = async (req: Request, res: Response) => {
   try {
     // Extract and transform the data
-    const { age_from, age_to, location, recent_profile, page_size } = req.body;
+    const { age_from, age_to, location, recent_profile, page_size } =
+      req.body.searchTerm;
 
     const pageNumber = Number(req.params.page);
-
-    console.log("pageNumber");
-    console.log(req.body);
 
     // @ts-ignore
     const profile = await getProfileByUserId(req.user.userId);
@@ -24,7 +22,7 @@ export const regularSearchController = async (req: Request, res: Response) => {
       return res.send(404).json({ msg: "error" });
     }
 
-    const oppositeGender = getOppositeGender(profile?.gender);
+    const oppositeGender = getOppositeGender(profile.gender);
 
     if (!oppositeGender) {
       return res.status(400).json({ msg: "Invalid gender" });
@@ -40,6 +38,9 @@ export const regularSearchController = async (req: Request, res: Response) => {
       page: pageNumber ? Number(req.params.page) : 1,
       page_size: page_size ? Number(page_size) : 10,
     };
+
+    console.log("reg");
+    console.log(searchParams);
 
     // Call the service
     const result = await regularSearchProfileService(searchParams);
