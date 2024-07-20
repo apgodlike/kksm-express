@@ -88,7 +88,7 @@ export const regularSearchProfileService = async (
   }
 };
 
-function calculateAge(dateOfBirth: string): number {
+export function calculateAge(dateOfBirth: string): number {
   const today = new Date();
   const birthDate = new Date(dateOfBirth);
   let age = today.getFullYear() - birthDate.getFullYear();

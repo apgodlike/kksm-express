@@ -1,4 +1,4 @@
-import { Gender, Profile } from "@prisma/client";
+import { EmploymentType, Gender, MaritalStatus, Profile } from "@prisma/client";
 
 export interface ProfilesResponse {
   profiles: Pick<
@@ -24,4 +24,14 @@ export interface PaginatedResult<T> {
   totalCount: number;
   totalPages: number;
   currentPage: number;
+}
+
+export interface item {
+  name: string;
+  age: number;
+  id: number;
+  marital_status: MaritalStatus;
+  location: string | null;
+  employment_type: EmploymentType | null;
+  education: string | null;
 }

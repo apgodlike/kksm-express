@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import {
   getProfileById,
   getProfileByUserId,
+  getRequestSentService,
   getSuggestedProfilesService,
+  postSendRequestService,
   saveProfileByUserId,
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
@@ -90,4 +92,41 @@ export const postRegularSearchController = async (
   } catch (error) {
     res.status(500).json({ error });
   }
+};
+
+export const getRequestSentController = async (req: Request, res: Response) => {
+  console.log("getRequestSentController");
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  const status = req.query.status;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  // @ts-ignore
+  const response = await getRequestSentService(userProfile.id, status);
+  if (!response) {
+    return res.status(404).send(response);
+  }
+
+  res.json(response);
+};
+
+export const postSendRequestController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // @ts-ignore
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  const requestedTo = req.body.requested_to;
+
+  // @ts-ignore
+  const requestedBy = requested_to.id;
+
+  const response = await postSendRequestService(requestedBy, requestedTo);
 };

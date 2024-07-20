@@ -109,15 +109,17 @@ user        User    @relation(fields: [user_id], references: [id])
 }
 
 model Contact {
-id          Int     @id @default(autoincrement())
+id              Int     @id @default(autoincrement())
 requested_at    DateTime @default(now())
-requested_by      Int
-  requested_by_profile         Profile  @relation("contact_requested_by", fields: [requested_by], references: [id])
-  requested_to      Int
-  requested_to_profile         Profile  @relation("contact_requested_to", fields: [requested_to], references: [id])
-is_accepted     Boolean
-is_declined     Boolean
-accepted_at     DateTime @default(now())
-declined_at     DateTime @default(now())
+requested_by    Int
+requested_by_profile         Profile  @relation("contact_requested_by", fields: [requested_by], references: [id])
+requested_to    Int
+requested_to_profile         Profile  @relation("contact_requested_to", fields: [requested_to], references: [id])
+is_accepted     Boolean  @default(false)
+is_declined     Boolean  @default(false)
+accepted_at     DateTime? @default(now())
+declined_at     DateTime? @default(now())
+// is_shortlisted  Boolean?
+// shortlisted_at  DateTime?
   @@unique([requested_by, requested_to])
 }

@@ -1,6 +1,7 @@
 import { ProfilesResponse } from "../types";
 import prisma from "../utils/prisma";
 import { Gender, Profile } from "@prisma/client";
+import { calculateAge } from "./regularSearchService";
 
 // export const getSuggestedProfiles = async () => {
 //   await prisma.profile.findMany({
@@ -152,4 +153,79 @@ export const getRandomTopProfilesRemove = async (
 
 export const getOppositeGender = (gender: Gender) => {
   return gender === Gender.Male ? Gender.Female : Gender.Male;
+};
+
+export const getRequestSentService = async (id: number, status: string) => {
+  let is_accepted;
+  let is_declined;
+
+  if (!status) {
+    return;
+  }
+
+  const statusLower = status.toLowerCase();
+
+  if (statusLower == "pending") {
+    is_accepted = false;
+    is_declined = false;
+  } else if (statusLower == "accepted") {
+    is_accepted = true;
+    is_declined = undefined;
+  } else if (statusLower == "declined") {
+    is_accepted = false;
+    is_declined = true;
+  } else {
+    return;
+  }
+
+  const response = await prisma.contact.findMany({
+    where: {
+      requested_by: id,
+      is_accepted: is_accepted,
+      is_declined: is_declined,
+    },
+    orderBy: { requested_at: "desc" },
+    select: {
+      requested_to_profile: {
+        select: {
+          id: true,
+          name: true,
+          date_of_birth: true,
+          marital_status: true,
+          location: true,
+          employment_type: true,
+          education: true,
+        },
+      },
+      accepted_at: true,
+      declined_at: true,
+    },
+  });
+  const transformedResponse = response.map((contact) => ({
+    id: contact.requested_to_profile.id,
+    name: contact.requested_to_profile.name,
+    age: calculateAge(contact.requested_to_profile.date_of_birth), // You'll need to implement this function
+    marital_status: contact.requested_to_profile.marital_status,
+    location: contact.requested_to_profile.location,
+    employment_type: contact.requested_to_profile.employment_type,
+    education: contact.requested_to_profile.education,
+    accepted_at: contact.accepted_at,
+    declined_at: contact.declined_at,
+  }));
+  return transformedResponse;
+};
+
+export const postSendRequestService = async (
+  requestedBy: number,
+  requestedTo: number
+) => {
+  const response = await prisma.contact.create({
+    data: {
+      requested_by: requestedBy,
+      requested_to: requestedTo,
+      is_accepted: false, // Add this
+      is_declined: false, // Add this
+    },
+    include: { requested_by_profile: true, requested_to_profile: true },
+  });
 };
