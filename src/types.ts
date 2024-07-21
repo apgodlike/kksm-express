@@ -7,6 +7,7 @@ export interface ProfilesResponse {
   >[];
   currentPage: number;
   totalPages: number;
+  // profileId: number;
 }
 
 export interface RegularSearchParams {

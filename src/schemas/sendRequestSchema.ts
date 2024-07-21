@@ -1,5 +1,5 @@
 import { z } from "zod";
 
-export const regularSearchSchema = z.object({
+export const sendRequestSchema = z.object({
   requested_to: z.number().int(),
 });

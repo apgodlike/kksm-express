@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import {
+  deleteShortlistService,
   getProfileById,
   getProfileByUserId,
   getRequestSentService,
   getSuggestedProfilesService,
+  postPhoneNumberService,
   postSendRequestService,
+  postShortlistService,
   saveProfileByUserId,
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
@@ -71,7 +74,8 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
     const profiles = await getSuggestedProfilesService(
       page,
       10,
-      userProfile.gender
+      userProfile.gender,
+      userProfile.id
     );
     if (profiles) {
       res.status(200).json(profiles);
@@ -126,7 +130,66 @@ export const postSendRequestController = async (
   const requestedTo = req.body.requested_to;
 
   // @ts-ignore
-  const requestedBy = requested_to.id;
+  const requestedBy = userProfile.id;
 
   const response = await postSendRequestService(requestedBy, requestedTo);
+
+  res.json(response);
+};
+
+export const postShortlistController = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // @ts-ignore
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  const requestedTo = req.body.requested_to;
+
+  // @ts-ignore
+  const requestedBy = userProfile.id;
+
+  const response = await postShortlistService(requestedBy, requestedTo);
+
+  res.json(response);
+};
+
+export const deleteShortlistController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // @ts-ignore
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  const requestedTo = req.body.requested_to;
+
+  // @ts-ignore
+  const requestedBy = userProfile.id;
+
+  const response = await deleteShortlistService(requestedBy, requestedTo);
+
+  res.json(response);
+};
+
+export const postPhoneNumberController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // @ts-ignore
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  const requestedTo = req.body.requested_to;
+
+  // @ts-ignore
+  const requestedBy = userProfile.id;
+
+  const response = await postPhoneNumberService(requestedBy, requestedTo);
+
+  res.json(response);
 };

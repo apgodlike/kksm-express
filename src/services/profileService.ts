@@ -72,7 +72,8 @@ export const getProfileByUserId = async (
 export const getSuggestedProfilesService = async (
   page: number = 1,
   pageSize: number = 10,
-  gender: Gender
+  gender: Gender,
+  profileId: number
 ): Promise<ProfilesResponse> => {
   const oppositeGender = getOppositeGender(gender);
   const skip = (page - 1) * pageSize;
@@ -91,7 +92,29 @@ export const getSuggestedProfilesService = async (
       kulam: true,
       education: true,
       employment_type: true,
+      contact_requested_to: {
+        where: { requested_by: profileId, is_declined: false },
+        select: { is_accepted: true, is_declined: true },
+      },
+      shortlisted_profiles: {
+        where: { shortlisted_by: profileId },
+        select: { shortlisted_at: true },
+      },
     },
+  });
+
+  const modifiedProfiles = profiles.map((item) => {
+    return {
+      id: item.id,
+      name: item.name,
+      date_of_birth: item.date_of_birth,
+      kulam: item.kulam,
+      education: item.education,
+      employment_type: item.employment_type,
+      is_accepted: item.contact_requested_to[0]?.is_accepted,
+      is_requested: item.contact_requested_to.length === 1 ? true : undefined,
+      is_shortlisted: item.shortlisted_profiles[0]?.shortlisted_at,
+    };
   });
 
   const totalProfiles = await prisma.profile.count({
@@ -101,7 +124,7 @@ export const getSuggestedProfilesService = async (
   });
 
   return {
-    profiles,
+    profiles: modifiedProfiles,
     currentPage: page,
     totalPages: Math.ceil(totalProfiles / pageSize),
   };
@@ -219,13 +242,90 @@ export const postSendRequestService = async (
   requestedBy: number,
   requestedTo: number
 ) => {
-  const response = await prisma.contact.create({
-    data: {
-      requested_by: requestedBy,
-      requested_to: requestedTo,
-      is_accepted: false, // Add this
-      is_declined: false, // Add this
-    },
-    include: { requested_by_profile: true, requested_to_profile: true },
-  });
+  try {
+    const response = await prisma.contact.create({
+      data: {
+        requested_by: requestedBy,
+        requested_to: requestedTo,
+        is_accepted: false, // Add this
+        is_declined: false, // Add this
+      },
+      include: { requested_by_profile: true, requested_to_profile: true },
+    });
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const postShortlistService = async (
+  requestedBy: number,
+  requestedTo: number
+) => {
+  try {
+    const response = await prisma.shortlist.create({
+      data: {
+        shortlisted_by: requestedBy,
+        shortlisted_profile: requestedTo,
+      },
+      include: { shortlisted_by_profile: true, shortlisted_profile_rel: true },
+    });
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const deleteShortlistService = async (
+  requestedBy: number,
+  requestedTo: number
+) => {
+  try {
+    const response = await prisma.shortlist.deleteMany({
+      where: {
+        AND: [
+          { shortlisted_by: requestedBy },
+          { shortlisted_profile: requestedTo },
+        ],
+      },
+    });
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const postPhoneNumberService = async (
+  requestedBy: number,
+  requestedTo: number
+) => {
+  try {
+    const isAuthorized = await prisma.contact.findFirst({
+      where: {
+        requested_by: requestedBy,
+        requested_to: requestedTo,
+        is_accepted: true,
+      },
+    });
+
+    if (!isAuthorized) {
+      return { message: "unAuthorized" };
+    }
+
+    const response = await prisma.profile.findFirst({
+      where: {
+        id: requestedTo,
+      },
+      select: {
+        user: {
+          select: { mobile_number: true },
+        },
+      },
+    });
+
+    const mobile_number = response?.user.mobile_number.toString();
+    return { mobile_number };
+  } catch (error) {
+    return error;
+  }
 };
