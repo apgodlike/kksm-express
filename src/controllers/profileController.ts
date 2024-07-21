@@ -11,6 +11,7 @@ import {
   saveProfileByUserId,
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
+import { Prisma } from "@prisma/client";
 
 export const saveProfile = async (req: Request, res: Response) => {
   try {
@@ -121,57 +122,100 @@ export const postSendRequestController = async (
   req: Request,
   res: Response
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
 
-  // @ts-ignore
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+    // @ts-ignore
+    const userProfile = await getProfileByUserId(Number(userProfileId));
 
-  const requestedTo = req.body.requested_to;
+    const requestedTo = req.body.requested_to;
 
-  // @ts-ignore
-  const requestedBy = userProfile.id;
+    // @ts-ignore
+    const requestedBy = userProfile.id;
 
-  const response = await postSendRequestService(requestedBy, requestedTo);
+    const response = await postSendRequestService(requestedBy, requestedTo);
+    res.status(201).json(response);
+  } catch (error) {
+    console.error("Error in Request creation:", error);
 
-  res.json(response);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // Handle known Prisma errors
+      if (error.code === "P2002") {
+        return res.status(409).json({ error: "Already sent Request" });
+      }
+    }
+
+    // For other types of errors, send a generic error message
+    res.status(500).json({
+      error: "An error occurred while sending request for the profile.",
+    });
+  }
 };
 
 export const postShortlistController = async (req: Request, res: Response) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
 
-  // @ts-ignore
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+    // @ts-ignore
+    const userProfile = await getProfileByUserId(Number(userProfileId));
 
-  const requestedTo = req.body.requested_to;
+    const requestedTo = req.body.requested_to;
 
-  // @ts-ignore
-  const requestedBy = userProfile.id;
+    // @ts-ignore
+    const requestedBy = userProfile.id;
 
-  const response = await postShortlistService(requestedBy, requestedTo);
+    const response = await postShortlistService(requestedBy, requestedTo);
+    res.status(201).json(response);
+  } catch (error) {
+    console.error("Error in shortlist creation:", error);
 
-  res.json(response);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // Handle known Prisma errors
+      if (error.code === "P2002") {
+        return res
+          .status(409)
+          .json({ error: "This profile is already shortlisted." });
+      }
+    }
+
+    // For other types of errors, send a generic error message
+    res
+      .status(500)
+      .json({ error: "An error occurred while shortlisting the profile." });
+  }
 };
 
 export const deleteShortlistController = async (
   req: Request,
   res: Response
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
 
-  // @ts-ignore
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+    // @ts-ignore
+    const userProfile = await getProfileByUserId(Number(userProfileId));
 
-  const requestedTo = req.body.requested_to;
+    const requestedTo = req.body.requested_to;
 
-  // @ts-ignore
-  const requestedBy = userProfile.id;
+    // @ts-ignore
+    const requestedBy = userProfile.id;
 
-  const response = await deleteShortlistService(requestedBy, requestedTo);
+    const response = await deleteShortlistService(requestedBy, requestedTo);
 
-  res.json(response);
+    if (response.count == 1) {
+      return res.status(200).json({ message: "Successfully Deleted" });
+    }
+
+    if (response.count == 0) {
+      return res.sendStatus(404);
+    }
+    return res.status(500);
+  } catch (error) {
+    return res.status(500);
+  }
 };
 
 export const postPhoneNumberController = async (

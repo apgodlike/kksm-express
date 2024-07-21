@@ -254,7 +254,7 @@ export const postSendRequestService = async (
     });
     return response;
   } catch (error) {
-    return error;
+    throw error;
   }
 };
 
@@ -272,7 +272,7 @@ export const postShortlistService = async (
     });
     return response;
   } catch (error) {
-    return error;
+    throw error;
   }
 };
 
@@ -291,7 +291,7 @@ export const deleteShortlistService = async (
     });
     return response;
   } catch (error) {
-    return error;
+    throw error;
   }
 };
 
