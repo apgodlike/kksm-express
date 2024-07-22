@@ -3,8 +3,11 @@ import {
   deleteShortlistService,
   getProfileById,
   getProfileByUserId,
+  getRequestReceivedService,
   getRequestSentService,
   getSuggestedProfilesService,
+  postAcceptRequestService,
+  postDeclineRequestService,
   postPhoneNumberService,
   postSendRequestService,
   postShortlistService,
@@ -234,6 +237,70 @@ export const postPhoneNumberController = async (
   const requestedBy = userProfile.id;
 
   const response = await postPhoneNumberService(requestedBy, requestedTo);
+
+  res.json(response);
+};
+
+export const getRequestReceivedController = async (
+  req: Request,
+  res: Response
+) => {
+  console.log("getRequestSentController");
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  const status = req.query.status;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  // @ts-ignore
+  const response = await getRequestReceivedService(userProfile.id, status);
+  if (!response) {
+    return res.sendStatus(404);
+  }
+
+  res.json(response);
+};
+
+export const postAcceptRequestController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // @ts-ignore
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  const requestedBy = req.body.requested_by;
+
+  // @ts-ignore
+  const acceptedBy = userProfile.id;
+
+  console.log("object", acceptedBy, requestedBy);
+
+  const response = await postAcceptRequestService(requestedBy, acceptedBy);
+
+  res.json(response);
+};
+
+export const postDeclineRequestController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // @ts-ignore
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  const requestedBy = req.body.requested_by;
+
+  // @ts-ignore
+  const declinedBy = userProfile.id;
+
+  const response = await postDeclineRequestService(requestedBy, declinedBy);
 
   res.json(response);
 };

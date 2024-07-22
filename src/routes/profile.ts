@@ -4,9 +4,12 @@ import { profileSchema } from "../schemas/profileSchema";
 import {
   deleteShortlistController,
   getProfile,
+  getRequestReceivedController,
   getRequestSentController,
   getSuggestedProfiles,
   getUserProfile,
+  postAcceptRequestController,
+  postDeclineRequestController,
   postPhoneNumberController,
   postSendRequestController,
   postShortlistController,
@@ -54,7 +57,11 @@ router.delete("/shortlist", authenticateToken, deleteShortlistController);
 
 router.post("/viewphonenumber", authenticateToken, postPhoneNumberController);
 
-router.get("/requestreceived", authenticateToken, regularSearchController);
+router.get("/requestreceived", authenticateToken, getRequestReceivedController);
+
+router.post("/acceptrequest", authenticateToken, postAcceptRequestController);
+
+router.post("/declinerequest", authenticateToken, postDeclineRequestController);
 
 router.get("/shortlisted", authenticateToken, regularSearchController);
 

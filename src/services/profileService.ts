@@ -263,6 +263,50 @@ export const postSendRequestService = async (
   }
 };
 
+export const postAcceptRequestService = async (
+  requestedBy: number,
+  acceptedBy: number
+) => {
+  try {
+    const response = await prisma.contact.update({
+      where: {
+        requested_by_requested_to: {
+          requested_by: requestedBy,
+          requested_to: acceptedBy,
+        },
+      },
+      data: {
+        is_accepted: true,
+      },
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const postDeclineRequestService = async (
+  requestedBy: number,
+  declinedBy: number
+) => {
+  try {
+    const response = await prisma.contact.update({
+      where: {
+        requested_by_requested_to: {
+          requested_by: requestedBy,
+          requested_to: declinedBy,
+        },
+      },
+      data: {
+        is_declined: true,
+      },
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const postShortlistService = async (
   requestedBy: number,
   requestedTo: number
@@ -333,4 +377,69 @@ export const postPhoneNumberService = async (
   } catch (error) {
     return error;
   }
+};
+
+export const getRequestReceivedService = async (id: number, status: string) => {
+  let is_accepted;
+  let is_declined;
+
+  if (!status) {
+    return;
+  }
+
+  const statusLower = status.toLowerCase();
+
+  if (statusLower == "pending") {
+    is_accepted = false;
+    is_declined = false;
+  } else if (statusLower == "accepted") {
+    is_accepted = true;
+    is_declined = undefined;
+  } else if (statusLower == "declined") {
+    is_accepted = false;
+    is_declined = true;
+  } else {
+    return;
+  }
+
+  const response = await prisma.contact.findMany({
+    where: {
+      requested_to: id,
+      is_accepted: is_accepted,
+      is_declined: is_declined,
+    },
+    orderBy: { requested_at: "desc" },
+    select: {
+      requested_by_profile: {
+        select: {
+          id: true,
+          name: true,
+          date_of_birth: true,
+          marital_status: true,
+          location: true,
+          employment_type: true,
+          education: true,
+          height: true,
+        },
+      },
+      accepted_at: true,
+      declined_at: true,
+      requested_at: true,
+    },
+  });
+
+  const transformedResponse = response.map((contact) => ({
+    id: contact.requested_by_profile.id,
+    name: contact.requested_by_profile.name,
+    age: calculateAge(contact.requested_by_profile.date_of_birth), // You'll need to implement this function
+    marital_status: contact.requested_by_profile.marital_status,
+    location: contact.requested_by_profile.location,
+    employment_type: contact.requested_by_profile.employment_type,
+    education: contact.requested_by_profile.education,
+    height: contact.requested_by_profile.height,
+    accepted_at: contact.accepted_at,
+    requested_at: contact.requested_at,
+    declined_at: contact.declined_at,
+  }));
+  return transformedResponse;
 };
