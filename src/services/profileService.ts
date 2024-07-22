@@ -218,12 +218,15 @@ export const getRequestSentService = async (id: number, status: string) => {
           location: true,
           employment_type: true,
           education: true,
+          height: true,
         },
       },
       accepted_at: true,
       declined_at: true,
+      requested_at: true,
     },
   });
+
   const transformedResponse = response.map((contact) => ({
     id: contact.requested_to_profile.id,
     name: contact.requested_to_profile.name,
@@ -232,7 +235,9 @@ export const getRequestSentService = async (id: number, status: string) => {
     location: contact.requested_to_profile.location,
     employment_type: contact.requested_to_profile.employment_type,
     education: contact.requested_to_profile.education,
+    height: contact.requested_to_profile.height,
     accepted_at: contact.accepted_at,
+    requested_at: contact.requested_at,
     declined_at: contact.declined_at,
   }));
   return transformedResponse;

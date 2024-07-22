@@ -112,7 +112,7 @@ export const getRequestSentController = async (req: Request, res: Response) => {
   // @ts-ignore
   const response = await getRequestSentService(userProfile.id, status);
   if (!response) {
-    return res.status(404).send(response);
+    return res.sendStatus(404);
   }
 
   res.json(response);
