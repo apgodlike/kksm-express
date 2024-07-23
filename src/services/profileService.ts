@@ -443,3 +443,39 @@ export const getRequestReceivedService = async (id: number, status: string) => {
   }));
   return transformedResponse;
 };
+
+export const getShortlistedService = async (id: number) => {
+  console.log("id", id);
+  const response = await prisma.shortlist.findMany({
+    where: {
+      shortlisted_by: id,
+    },
+    orderBy: { shortlisted_at: "desc" },
+    select: {
+      shortlisted_profile_rel: {
+        select: {
+          id: true,
+          name: true,
+          date_of_birth: true,
+          marital_status: true,
+          location: true,
+          employment_type: true,
+          education: true,
+          height: true,
+        },
+      },
+    },
+  });
+
+  const transformedResponse = response.map((contact) => ({
+    id: contact.shortlisted_profile_rel.id,
+    name: contact.shortlisted_profile_rel.name,
+    age: calculateAge(contact.shortlisted_profile_rel.date_of_birth), // You'll need to implement this function
+    marital_status: contact.shortlisted_profile_rel.marital_status,
+    location: contact.shortlisted_profile_rel.location,
+    employment_type: contact.shortlisted_profile_rel.employment_type,
+    education: contact.shortlisted_profile_rel.education,
+    height: contact.shortlisted_profile_rel.height,
+  }));
+  return transformedResponse;
+};

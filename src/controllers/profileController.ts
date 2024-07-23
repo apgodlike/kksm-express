@@ -5,6 +5,7 @@ import {
   getProfileByUserId,
   getRequestReceivedService,
   getRequestSentService,
+  getShortlistedService,
   getSuggestedProfilesService,
   postAcceptRequestService,
   postDeclineRequestService,
@@ -301,6 +302,24 @@ export const postDeclineRequestController = async (
   const declinedBy = userProfile.id;
 
   const response = await postDeclineRequestService(requestedBy, declinedBy);
+
+  res.json(response);
+};
+
+export const getShortlistedController = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  const status = req.query.status;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  // @ts-ignore
+  const response = await getShortlistedService(userProfile.id);
+  if (!response) {
+    return res.sendStatus(404);
+  }
 
   res.json(response);
 };

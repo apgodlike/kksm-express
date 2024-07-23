@@ -6,6 +6,7 @@ import {
   getProfile,
   getRequestReceivedController,
   getRequestSentController,
+  getShortlistedController,
   getSuggestedProfiles,
   getUserProfile,
   postAcceptRequestController,
@@ -63,6 +64,6 @@ router.post("/acceptrequest", authenticateToken, postAcceptRequestController);
 
 router.post("/declinerequest", authenticateToken, postDeclineRequestController);
 
-router.get("/shortlisted", authenticateToken, regularSearchController);
+router.get("/shortlisted", authenticateToken, getShortlistedController);
 
 export default router;
