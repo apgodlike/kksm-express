@@ -2,12 +2,20 @@ import { ProfilesResponse } from "../types";
 import prisma from "../utils/prisma";
 import { Gender, Profile } from "@prisma/client";
 import { calculateAge } from "./regularSearchService";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-// export const getSuggestedProfiles = async () => {
-//   await prisma.profile.findMany({
-//     where: {},
-//   });
-// };
+if (!process.env.ACCESS_KEY_ID || !process.env.SECRET_ACCESS_KEY) {
+  throw new Error("AWS credentials are not set in environment variables");
+}
+
+const client = new S3Client({
+  credentials: {
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  },
+  region: "ap-southeast-2",
+});
 
 export const saveProfileByUserId = async (
   payload: any,
@@ -102,6 +110,12 @@ export const getSuggestedProfilesService = async (
       },
     },
   });
+
+  const contactProfiles = await prisma.contact.findMany({
+    where: { requested_to: profileId },
+    select: { is_accepted: true, requested_by: true },
+  });
+  console.log("contactProfiles", contactProfiles);
 
   const modifiedProfiles = profiles.map((item) => {
     return {
@@ -478,4 +492,28 @@ export const getShortlistedService = async (id: number) => {
     height: contact.shortlisted_profile_rel.height,
   }));
   return transformedResponse;
+};
+
+export const getPresignedUrlService = async (id: number) => {
+  console.log("id", id);
+
+  const command = new PutObjectCommand({
+    Bucket: "decenteralized-fiver-web3",
+    Key: `kksm/${id}/${Math.random()}/image.jpg`,
+    ContentType: "img/jpg",
+  });
+
+  // import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+  // const { url, fields } = await createPresignedPost(client, {
+  //   Bucket: "decenteralized-fiver-web3",
+  //   Key: `kksm/${id}/${Math.random()}/image.jpg`,
+  //   Conditions: [
+  //     ["content-length-range", 0, 1000],
+  //     ["eq", "$Content-Type", "image/jpeg"],
+  //   ],
+  //   Expires: 3600,
+  // });
+  const presignedurl = await getSignedUrl(client, command, { expiresIn: 3600 });
+
+  return presignedurl;
 };

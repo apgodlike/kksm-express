@@ -3,6 +3,7 @@ import { validateRequest } from "../middlewares/validateRequest";
 import { profileSchema } from "../schemas/profileSchema";
 import {
   deleteShortlistController,
+  getPresignedUrlControllerController,
   getProfile,
   getRequestReceivedController,
   getRequestSentController,
@@ -65,5 +66,11 @@ router.post("/acceptrequest", authenticateToken, postAcceptRequestController);
 router.post("/declinerequest", authenticateToken, postDeclineRequestController);
 
 router.get("/shortlisted", authenticateToken, getShortlistedController);
+
+router.get(
+  "/presignedurl",
+  authenticateToken,
+  getPresignedUrlControllerController
+);
 
 export default router;
