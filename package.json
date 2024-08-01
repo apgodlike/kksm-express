@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/index.ts",
+    "dev": "nodemon src/index.ts",
     "astart": "node dist/index.js",
     "build": "prisma generate && tsc",
     "postinstall": "prisma generate"

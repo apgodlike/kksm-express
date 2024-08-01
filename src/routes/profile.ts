@@ -3,6 +3,7 @@ import { validateRequest } from "../middlewares/validateRequest";
 import { profileSchema } from "../schemas/profileSchema";
 import {
   deleteShortlistController,
+  getContactStatusController,
   getPresignedUrlControllerController,
   getProfile,
   getRequestReceivedController,
@@ -31,7 +32,7 @@ router.post(
   saveProfile
 );
 
-router.get("/id/:id", getProfile);
+router.get("/id/:id", authenticateToken, getProfile);
 
 router.get("/getuserprofile", authenticateToken, getUserProfile);
 
@@ -72,5 +73,7 @@ router.get(
   authenticateToken,
   getPresignedUrlControllerController
 );
+
+router.get("/contactstatus", authenticateToken, getContactStatusController);
 
 export default router;

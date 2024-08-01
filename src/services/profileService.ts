@@ -63,9 +63,25 @@ export const saveProfileByUserId = async (
   });
 };
 
-export const getProfileById = async (id: number): Promise<Profile | null> => {
+export const getProfileById = async (
+  id: number,
+  userProfileId: number
+): Promise<Profile | null> => {
   return await prisma.profile.findUnique({
-    where: { id },
+    where: {
+      id,
+    },
+    include: {
+      contact_requested_to: {
+        where: {
+          requested_by: userProfileId,
+        },
+        select: {
+          is_accepted: true,
+          is_declined: true,
+        },
+      },
+    },
   });
 };
 
@@ -516,4 +532,41 @@ export const getPresignedUrlService = async (id: number) => {
   const presignedurl = await getSignedUrl(client, command, { expiresIn: 3600 });
 
   return presignedurl;
+};
+
+export const getContactStatusService = async (
+  requestedBy: number,
+  requestedTo: number
+) => {
+  try {
+    const contactStatus = await prisma.contact.findFirst({
+      where: {
+        requested_by: requestedBy,
+        requested_to: requestedTo,
+      },
+      select: { is_accepted: true, is_declined: true },
+    });
+
+    const shortlistStatus = await prisma.shortlist.findFirst({
+      where: {
+        shortlisted_by: requestedBy,
+        shortlisted_profile: requestedTo,
+      },
+    });
+
+    // if (!currentStatus) {
+    //   return { message: "unAuthorized" };
+    // }
+
+    const response = {
+      is_shortlisted: shortlistStatus ? true : false,
+      is_requested: contactStatus ? true : false,
+      is_accepted: contactStatus?.is_accepted,
+      is_declined: contactStatus?.is_declined,
+    };
+
+    return { response };
+  } catch (error) {
+    return error;
+  }
 };

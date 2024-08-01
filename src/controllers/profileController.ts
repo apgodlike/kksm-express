@@ -35,8 +35,15 @@ export const getProfile = async (req: Request, res: Response) => {
   // enable later
   const id = parseInt(req.params.id, 10);
   // const id = 1;
+  // @ts-ignore
+  const userId = req.user.userId;
+  const userProfile = await getProfileByUserId(userId);
+  if (!userProfile) {
+    return res.status(404).json({ error: "User profile not found" });
+  }
+
   try {
-    const profile = await getProfileById(id);
+    const profile = await getProfileById(id, userProfile.id);
     if (profile) {
       res.status(200).json(profile);
     } else {
@@ -339,6 +346,27 @@ export const getPresignedUrlControllerController = async (
 
   // @ts-ignore
   const response = await getPresignedUrlService(userProfile.id);
+  if (!response) {
+    return res.sendStatus(404);
+  }
+
+  res.json(response);
+};
+
+export const getContactStatusController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  const imageNumber = req.query.image;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  // @ts-ignore
+  const response = await getContactStatusService(userProfile.id);
   if (!response) {
     return res.sendStatus(404);
   }
