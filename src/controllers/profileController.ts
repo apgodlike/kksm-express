@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   deleteShortlistService,
+  getContactStatusService,
   getPresignedUrlService,
   getProfileById,
   getProfileByUserId,
@@ -360,13 +361,19 @@ export const getContactStatusController = async (
   // @ts-ignore
   const userProfileId = req.user.userId;
 
-  const imageNumber = req.query.image;
+  const requestedId = req.query.requestedId;
   // @ts-ignore
   // const id = req.params.page;
   const userProfile = await getProfileByUserId(Number(userProfileId));
+  if (!userProfile) {
+    return res.sendStatus(404);
+  }
 
   // @ts-ignore
-  const response = await getContactStatusService(userProfile.id);
+  const response = await getContactStatusService(
+    Number(userProfile.id),
+    Number(requestedId)
+  );
   if (!response) {
     return res.sendStatus(404);
   }
