@@ -565,7 +565,7 @@ export const getContactStatusService = async (
       is_declined: contactStatus?.is_declined,
     };
 
-    return { response };
+    return response;
   } catch (error) {
     return error;
   }
