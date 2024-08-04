@@ -120,6 +120,10 @@ export const getSuggestedProfilesService = async (
       kulam: true,
       education: true,
       employment_type: true,
+      image_1: true,
+      image_2: true,
+      image_3: true,
+      image_4: true,
       contact_requested_to: {
         where: { requested_by: profileId, is_declined: false },
         select: { is_accepted: true, is_declined: true },
@@ -148,6 +152,10 @@ export const getSuggestedProfilesService = async (
       is_accepted: item.contact_requested_to[0]?.is_accepted,
       is_requested: item.contact_requested_to.length === 1 ? true : undefined,
       is_shortlisted: item.shortlisted_profiles[0]?.shortlisted_at,
+      image_1: item.image_1,
+      image_2: item.image_2,
+      image_3: item.image_3,
+      image_4: item.image_4,
     };
   });
 
