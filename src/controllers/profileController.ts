@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  deleteAwsFileService,
   deleteShortlistService,
   getContactStatusService,
   getPresignedUrlService,
@@ -15,6 +16,7 @@ import {
   postSendRequestService,
   postShortlistService,
   saveProfileByUserId,
+  updateOneProfileField,
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
 import { Prisma } from "@prisma/client";
@@ -333,7 +335,7 @@ export const getShortlistedController = async (req: Request, res: Response) => {
   res.json(response);
 };
 
-export const getPresignedUrlControllerController = async (
+export const getPresignedUrlController = async (
   req: Request,
   res: Response
 ) => {
@@ -345,9 +347,24 @@ export const getPresignedUrlControllerController = async (
   // const id = req.params.page;
   const userProfile = await getProfileByUserId(Number(userProfileId));
 
-  // @ts-ignore
-  const response = await getPresignedUrlService(userProfile.id);
+  if (!userProfile) {
+    return res.sendStatus(404);
+  }
+
+  const key = `kksm/${userProfile.id}/${Math.random()}/image.jpg`;
+
+  const response = await getPresignedUrlService(key);
   if (!response) {
+    return res.sendStatus(404);
+  }
+
+  const imageUpdate = await updateOneProfileField(
+    userProfile.id,
+    "image_" + imageNumber,
+    key
+  );
+  console.log("imageUpdate ", imageUpdate);
+  if (!imageUpdate) {
     return res.sendStatus(404);
   }
 
@@ -379,4 +396,40 @@ export const getContactStatusController = async (
   }
 
   res.json(response);
+};
+
+export const deleteImageController = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  const imageNumber = req.query.image;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+
+  if (!userProfile) {
+    return res.sendStatus(404);
+  }
+
+  const imageKey = "image_" + imageNumber;
+
+  // @ts-ignore
+  const imagePath = userProfile[imageKey];
+
+  const response = await deleteAwsFileService(imagePath);
+
+  if (!response) {
+    return res.sendStatus(404);
+  }
+
+  const imageUpdate = await updateOneProfileField(
+    userProfile.id,
+    "image_" + imageNumber,
+    null
+  );
+  if (!imageUpdate) {
+    return res.sendStatus(404);
+  }
+
+  res.json({ message: "Image Deleted" });
 };

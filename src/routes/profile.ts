@@ -2,9 +2,10 @@ import { Router } from "express";
 import { validateRequest } from "../middlewares/validateRequest";
 import { profileSchema } from "../schemas/profileSchema";
 import {
+  deleteImageController,
   deleteShortlistController,
   getContactStatusController,
-  getPresignedUrlControllerController,
+  getPresignedUrlController,
   getProfile,
   getRequestReceivedController,
   getRequestSentController,
@@ -68,11 +69,9 @@ router.post("/declinerequest", authenticateToken, postDeclineRequestController);
 
 router.get("/shortlisted", authenticateToken, getShortlistedController);
 
-router.get(
-  "/presignedurl",
-  authenticateToken,
-  getPresignedUrlControllerController
-);
+router.get("/presignedurl", authenticateToken, getPresignedUrlController);
+
+router.delete("/deleteimage", authenticateToken, deleteImageController);
 
 router.get("/contactstatus", authenticateToken, getContactStatusController);
 

@@ -2,7 +2,11 @@ import { ProfilesResponse } from "../types";
 import prisma from "../utils/prisma";
 import { Gender, Profile } from "@prisma/client";
 import { calculateAge } from "./regularSearchService";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 if (!process.env.ACCESS_KEY_ID || !process.env.SECRET_ACCESS_KEY) {
@@ -510,12 +514,10 @@ export const getShortlistedService = async (id: number) => {
   return transformedResponse;
 };
 
-export const getPresignedUrlService = async (id: number) => {
-  console.log("id", id);
-
+export const getPresignedUrlService = async (key: string) => {
   const command = new PutObjectCommand({
     Bucket: "decenteralized-fiver-web3",
-    Key: `kksm/${id}/${Math.random()}/image.jpg`,
+    Key: key,
     ContentType: "img/jpg",
   });
 
@@ -532,6 +534,15 @@ export const getPresignedUrlService = async (id: number) => {
   const presignedurl = await getSignedUrl(client, command, { expiresIn: 3600 });
 
   return presignedurl;
+};
+
+export const deleteAwsFileService = async (key: string) => {
+  const command = new DeleteObjectCommand({
+    Bucket: "decenteralized-fiver-web3",
+    Key: key,
+  });
+
+  return command;
 };
 
 export const getContactStatusService = async (
@@ -565,6 +576,26 @@ export const getContactStatusService = async (
       is_declined: contactStatus?.is_declined,
     };
 
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
+// userProfile,
+// Number(imageNumber),
+// "/" + key
+
+export const updateOneProfileField = async (
+  userProfile: number,
+  path: string,
+  value: string | null
+) => {
+  try {
+    const response = await prisma.profile.update({
+      where: { id: userProfile },
+      data: { [path]: value },
+    });
     return response;
   } catch (error) {
     return error;
