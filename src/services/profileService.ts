@@ -549,8 +549,13 @@ export const deleteAwsFileService = async (key: string) => {
     Bucket: "decenteralized-fiver-web3",
     Key: key,
   });
-
-  return command;
+  try {
+    const response = await client.send(command);
+    return response;
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    throw error;
+  }
 };
 
 export const getContactStatusService = async (
