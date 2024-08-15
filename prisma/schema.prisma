@@ -30,6 +30,10 @@ gender      Gender
 kulam       String
 mother_tongue String? @default("Tamil")
 height      String?
+raghu_kethu String?
+sevvai_dhosam String?
+raasi String?
+star String?
 marital_status  MaritalStatus? 
 physical_status PhysicalStatus?
 number_of_brothers  Int? @default(0)
@@ -45,7 +49,7 @@ image_1     String?
 image_2     String?
 image_3     String?
 image_4     String?
-image_horoscope String?
+image_5     String?
 contact_name String?
 contact_number String?
 created_at DateTime @default(now())
