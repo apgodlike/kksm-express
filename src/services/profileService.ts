@@ -22,7 +22,7 @@ const client = new S3Client({
 });
 
 export const saveProfileByUserId = async (
-  payload: any,
+  payload: Profile,
   user_id: Number
 ): Promise<Profile | null> => {
   //   const {

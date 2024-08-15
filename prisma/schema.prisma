@@ -28,14 +28,14 @@ education   String?
 location    String? // enum?
 gender      Gender 
 kulam       String
-mother_tongue String?
+mother_tongue String? @default("Tamil")
 height      String?
 marital_status  MaritalStatus? 
 physical_status PhysicalStatus?
-number_of_brothers  Int?
-number_of_brothers_married  Int?
-number_of_sisters  Int?
-number_of_sisters_married  Int?
+number_of_brothers  Int? @default(0)
+number_of_brothers_married  Int? @default(0)
+number_of_sisters  Int? @default(0)
+number_of_sisters_married  Int? @default(0)
 father_occupation String?
 mother_occupation String?
 employment_type EmploymentType?
