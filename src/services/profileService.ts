@@ -63,6 +63,7 @@ export const saveProfileByUserId = async (
         user: true,
       },
     });
+    console.log("save");
     return profile;
   });
 };

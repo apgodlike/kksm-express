@@ -30,7 +30,7 @@ gender      Gender
 kulam       String
 mother_tongue String? @default("Tamil")
 height      String?
-raghu_kethu String?
+ragu_kethu String?
 sevvai_dhosam String?
 raasi String?
 star String?
