@@ -262,6 +262,8 @@ export const getRequestSentService = async (id: number, status: string) => {
           employment_type: true,
           education: true,
           height: true,
+          kulam: true,
+          image_1: true,
         },
       },
       accepted_at: true,
@@ -273,12 +275,14 @@ export const getRequestSentService = async (id: number, status: string) => {
   const transformedResponse = response.map((contact) => ({
     id: contact.requested_to_profile.id,
     name: contact.requested_to_profile.name,
-    age: calculateAge(contact.requested_to_profile.date_of_birth), // You'll need to implement this function
+    age: calculateAge(contact.requested_to_profile.date_of_birth),
     marital_status: contact.requested_to_profile.marital_status,
     location: contact.requested_to_profile.location,
     employment_type: contact.requested_to_profile.employment_type,
     education: contact.requested_to_profile.education,
     height: contact.requested_to_profile.height,
+    kulam: contact.requested_to_profile.kulam,
+    image_1: contact.requested_to_profile.image_1,
     accepted_at: contact.accepted_at,
     requested_at: contact.requested_at,
     declined_at: contact.declined_at,
@@ -444,6 +448,10 @@ export const getRequestReceivedService = async (id: number, status: string) => {
   } else {
     return;
   }
+  const something = await prisma.contact.findMany({
+    where: { requested_to: id },
+  });
+  console.log("something, ", id);
 
   const response = await prisma.contact.findMany({
     where: {
@@ -463,6 +471,8 @@ export const getRequestReceivedService = async (id: number, status: string) => {
           employment_type: true,
           education: true,
           height: true,
+          kulam: true,
+          image_1: true,
         },
       },
       accepted_at: true,
@@ -566,10 +576,23 @@ export const getContactStatusService = async (
   try {
     const contactStatus = await prisma.contact.findFirst({
       where: {
-        requested_by: requestedBy,
-        requested_to: requestedTo,
+        OR: [
+          {
+            requested_by: requestedBy,
+            requested_to: requestedTo,
+          },
+          {
+            requested_by: requestedTo,
+            requested_to: requestedBy,
+          },
+        ],
       },
-      select: { is_accepted: true, is_declined: true },
+      select: {
+        is_accepted: true,
+        is_declined: true,
+        requested_by: true,
+        requested_to: true,
+      },
     });
 
     const shortlistStatus = await prisma.shortlist.findFirst({
@@ -579,15 +602,15 @@ export const getContactStatusService = async (
       },
     });
 
-    // if (!currentStatus) {
-    //   return { message: "unAuthorized" };
-    // }
-
     const response = {
       is_shortlisted: shortlistStatus ? true : false,
       is_requested: contactStatus ? true : false,
       is_accepted: contactStatus?.is_accepted,
       is_declined: contactStatus?.is_declined,
+      is_requested_to_my_profile:
+        contactStatus?.requested_by === requestedBy ? false : true,
+      requested_by: contactStatus?.requested_by,
+      requested_to: contactStatus?.requested_to,
     };
 
     return response;

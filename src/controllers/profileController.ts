@@ -257,7 +257,7 @@ export const getRequestReceivedController = async (
   req: Request,
   res: Response
 ) => {
-  console.log("getRequestSentController");
+  console.log("getRequestReceivedController");
   // @ts-ignore
   const userProfileId = req.user.userId;
 
