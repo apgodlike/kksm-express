@@ -71,8 +71,8 @@ export const saveProfileByUserId = async (
 export const getProfileById = async (
   id: number,
   userProfileId: number
-): Promise<Profile | null> => {
-  return await prisma.profile.findUnique({
+): Promise<Omit<Profile, "contact_name" | "contact_number"> | null> => {
+  const response = await prisma.profile.findUnique({
     where: {
       id,
     },
@@ -88,6 +88,13 @@ export const getProfileById = async (
       },
     },
   });
+  if (!response) {
+    return null;
+  }
+
+  const { contact_name, contact_number, ...otherProperties } = response;
+
+  return otherProperties;
 };
 
 export const getProfileByUserId = async (
@@ -126,12 +133,14 @@ export const getSuggestedProfilesService = async (
       image_3: true,
       image_4: true,
       contact_requested_to: {
-        where: { requested_by: profileId },
+        where: {
+          OR: [{ requested_by: profileId }, { requested_to: profileId }],
+        },
         select: { is_accepted: true, is_declined: true },
       },
       contact_requested_by: {
         where: {
-          requested_to: profileId,
+          OR: [{ requested_by: profileId }, { requested_to: profileId }],
         },
         select: { is_accepted: true, is_declined: true },
       },
@@ -172,7 +181,9 @@ export const getSuggestedProfilesService = async (
       kulam: item.kulam,
       education: item.education,
       employment_type: item.employment_type,
-      is_accepted: item.contact_requested_to[0]?.is_accepted,
+      is_accepted:
+        item.contact_requested_to[0]?.is_accepted ||
+        item.contact_requested_by[0]?.is_accepted,
       is_declined: item.contact_requested_to[0]?.is_declined,
       is_requested: item.contact_requested_to.length === 1 ? true : undefined,
       is_shortlisted: item.shortlisted_profiles[0]?.shortlisted_at,
@@ -424,8 +435,10 @@ export const postPhoneNumberService = async (
   try {
     const isAuthorized = await prisma.contact.findFirst({
       where: {
-        requested_by: requestedBy,
-        requested_to: requestedTo,
+        OR: [
+          { requested_by: requestedBy, requested_to: requestedTo },
+          { requested_by: requestedTo, requested_to: requestedBy },
+        ],
         is_accepted: true,
       },
     });
@@ -439,14 +452,14 @@ export const postPhoneNumberService = async (
         id: requestedTo,
       },
       select: {
-        user: {
-          select: { mobile_number: true },
-        },
+        contact_name: true,
+        contact_number: true,
       },
     });
 
-    const mobile_number = response?.user.mobile_number.toString();
-    return { mobile_number };
+    const mobile_number = response?.contact_number?.toString();
+    const contact_name = response?.contact_name?.toString();
+    return { contact_name, mobile_number };
   } catch (error) {
     return error;
   }

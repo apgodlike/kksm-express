@@ -84,8 +84,6 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
     }
 
     const page = Number(req.params.page);
-    console.log("111");
-    console.log(req.params);
     // @ts-ignore
     const profiles = await getSuggestedProfilesService(
       page,
