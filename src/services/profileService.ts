@@ -126,7 +126,13 @@ export const getSuggestedProfilesService = async (
       image_3: true,
       image_4: true,
       contact_requested_to: {
-        where: { requested_by: profileId, is_declined: false },
+        where: { requested_by: profileId },
+        select: { is_accepted: true, is_declined: true },
+      },
+      contact_requested_by: {
+        where: {
+          requested_to: profileId,
+        },
         select: { is_accepted: true, is_declined: true },
       },
       shortlisted_profiles: {
@@ -140,19 +146,39 @@ export const getSuggestedProfilesService = async (
     where: { requested_to: profileId },
     select: { is_accepted: true, requested_by: true },
   });
-  console.log("contactProfiles", contactProfiles);
 
-  const modifiedProfiles = profiles.map((item) => {
+  const filteredProfiles = profiles.filter((item) => {
+    if (
+      item.contact_requested_to[0]?.is_accepted ||
+      item.contact_requested_by[0]?.is_accepted
+    ) {
+      return true;
+    }
+    if (
+      item.contact_requested_to[0]?.is_declined ||
+      item.contact_requested_by[0]?.is_declined
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  const modifiedProfiles = filteredProfiles.map((item) => {
     return {
       id: item.id,
       name: item.name,
       date_of_birth: item.date_of_birth,
+      age: calculateAge(item.date_of_birth),
       kulam: item.kulam,
       education: item.education,
       employment_type: item.employment_type,
       is_accepted: item.contact_requested_to[0]?.is_accepted,
+      is_declined: item.contact_requested_to[0]?.is_declined,
       is_requested: item.contact_requested_to.length === 1 ? true : undefined,
       is_shortlisted: item.shortlisted_profiles[0]?.shortlisted_at,
+      is_requested_to_my_profile:
+        item.contact_requested_by.length === 1 ? true : undefined,
+      is_accepted_by_my_profile: item.contact_requested_by[0]?.is_accepted,
       image_1: item.image_1,
       image_2: item.image_2,
       image_3: item.image_3,
@@ -601,14 +627,24 @@ export const getContactStatusService = async (
         shortlisted_profile: requestedTo,
       },
     });
+    console.log("contactStatus?.requested_by, ", contactStatus?.requested_by);
+
+    const is_requested_to_my_profile = () => {
+      if (
+        !contactStatus?.requested_by ||
+        contactStatus?.requested_by === requestedBy
+      ) {
+        return false;
+      }
+      return true;
+    };
 
     const response = {
       is_shortlisted: shortlistStatus ? true : false,
       is_requested: contactStatus ? true : false,
       is_accepted: contactStatus?.is_accepted,
       is_declined: contactStatus?.is_declined,
-      is_requested_to_my_profile:
-        contactStatus?.requested_by === requestedBy ? false : true,
+      is_requested_to_my_profile: is_requested_to_my_profile(),
       requested_by: contactStatus?.requested_by,
       requested_to: contactStatus?.requested_to,
     };
