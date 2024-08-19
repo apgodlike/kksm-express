@@ -25,7 +25,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const newUser = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
-          email,
+          email: email.toLowerCase(),
           password: hashedPassword,
           mobile_number: Number(mobile_number),
         },
@@ -65,7 +65,9 @@ export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
