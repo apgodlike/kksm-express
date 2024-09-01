@@ -3,6 +3,7 @@ import {
   deleteAwsFileService,
   deleteShortlistService,
   getContactStatusService,
+  getNotificationTypeCountsService,
   getPresignedUrlService,
   getProfileById,
   getProfileByUserId,
@@ -10,6 +11,7 @@ import {
   getRequestSentService,
   getShortlistedService,
   getSuggestedProfilesService,
+  getViewNotificationService,
   postAcceptRequestService,
   postDeclineRequestService,
   postPhoneNumberService,
@@ -430,4 +432,58 @@ export const deleteImageController = async (req: Request, res: Response) => {
   }
 
   res.json({ message: "Image Deleted" });
+};
+
+export const getNotificationTypeCountsController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  // const requestedId = req.query.requestedId;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+  if (!userProfile) {
+    return res.sendStatus(404);
+  }
+
+  // @ts-ignore
+  const response = await getNotificationTypeCountsService(
+    Number(userProfile.id)
+  );
+  if (!response) {
+    return res.sendStatus(404);
+  }
+
+  res.json(response);
+};
+
+export const getViewNotificationController = async (
+  req: Request,
+  res: Response
+) => {
+  // @ts-ignore
+  const userProfileId = req.user.userId;
+
+  const pageNumber = req.params.page;
+
+  // const requestedId = req.query.requestedId;
+  // @ts-ignore
+  // const id = req.params.page;
+  const userProfile = await getProfileByUserId(Number(userProfileId));
+  if (!userProfile) {
+    return res.sendStatus(404);
+  }
+
+  const response = await getViewNotificationService(
+    Number(pageNumber),
+    userProfile.id
+  );
+  if (!response) {
+    return res.sendStatus(404);
+  }
+
+  res.json(response);
 };

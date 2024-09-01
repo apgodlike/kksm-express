@@ -52,6 +52,7 @@ image_4     String?
 image_5     String?
 contact_name String?
 contact_number String?
+notification Notification[]
 created_at DateTime @default(now())
 user_id     Int     @unique
 user        User   @relation(fields: [user_id], references: [id])
@@ -142,4 +143,22 @@ model Shortlist {
   shortlisted_profile_rel Profile @relation("shortlisted_profile", fields: [shortlisted_profile], references: [id])
 
   @@unique([shortlisted_by, shortlisted_profile])
+}
+
+enum NotificationType {
+RequestReceived
+RequestAccepted
+RequestDeclined
+ProfileView
+PhoneNumberView
+}
+
+model Notification{
+  id    Int @id @default(autoincrement())
+  timestamp    DateTime @default(now())
+  is_viewed Boolean @default(false)
+  viewed_at DateTime?
+  profile_id  Int
+  profile     Profile @relation(fields: [profile_id],references: [id])
+  notification_type NotificationType
 }

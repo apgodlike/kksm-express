@@ -1,6 +1,6 @@
 import { ProfilesResponse } from "../types";
 import prisma from "../utils/prisma";
-import { Gender, Profile } from "@prisma/client";
+import { Gender, NotificationType, Profile } from "@prisma/client";
 import { calculateAge } from "./regularSearchService";
 import {
   DeleteObjectCommand,
@@ -8,6 +8,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { notDeepEqual } from "assert";
 
 if (!process.env.ACCESS_KEY_ID || !process.env.SECRET_ACCESS_KEY) {
   throw new Error("AWS credentials are not set in environment variables");
@@ -332,14 +333,23 @@ export const postSendRequestService = async (
   requestedTo: number
 ) => {
   try {
-    const response = await prisma.contact.create({
-      data: {
-        requested_by: requestedBy,
-        requested_to: requestedTo,
-        is_accepted: false, // Add this
-        is_declined: false, // Add this
-      },
-      include: { requested_by_profile: true, requested_to_profile: true },
+    const response = await prisma.$transaction(async (x) => {
+      const response = await x.contact.create({
+        data: {
+          requested_by: requestedBy,
+          requested_to: requestedTo,
+          is_accepted: false,
+          is_declined: false,
+        },
+        include: { requested_by_profile: true, requested_to_profile: true },
+      });
+      await x.notification.create({
+        data: {
+          notification_type: NotificationType.RequestReceived,
+          profile_id: requestedTo,
+        },
+      });
+      return response;
     });
     return response;
   } catch (error) {
@@ -352,16 +362,25 @@ export const postAcceptRequestService = async (
   acceptedBy: number
 ) => {
   try {
-    const response = await prisma.contact.update({
-      where: {
-        requested_by_requested_to: {
-          requested_by: requestedBy,
-          requested_to: acceptedBy,
+    const response = prisma.$transaction(async (x) => {
+      const response = await x.contact.update({
+        where: {
+          requested_by_requested_to: {
+            requested_by: requestedBy,
+            requested_to: acceptedBy,
+          },
         },
-      },
-      data: {
-        is_accepted: true,
-      },
+        data: {
+          is_accepted: true,
+        },
+      });
+      await x.notification.create({
+        data: {
+          notification_type: NotificationType.RequestAccepted,
+          profile_id: requestedBy,
+        },
+      });
+      return response;
     });
     return response;
   } catch (error) {
@@ -374,16 +393,25 @@ export const postDeclineRequestService = async (
   declinedBy: number
 ) => {
   try {
-    const response = await prisma.contact.update({
-      where: {
-        requested_by_requested_to: {
-          requested_by: requestedBy,
-          requested_to: declinedBy,
+    const response = prisma.$transaction(async (x) => {
+      const response = await x.contact.update({
+        where: {
+          requested_by_requested_to: {
+            requested_by: requestedBy,
+            requested_to: declinedBy,
+          },
         },
-      },
-      data: {
-        is_declined: true,
-      },
+        data: {
+          is_declined: true,
+        },
+      });
+      await x.notification.create({
+        data: {
+          notification_type: NotificationType.RequestDeclined,
+          profile_id: requestedBy,
+        },
+      });
+      return response;
     });
     return response;
   } catch (error) {
@@ -447,14 +475,35 @@ export const postPhoneNumberService = async (
       return { message: "unAuthorized" };
     }
 
-    const response = await prisma.profile.findFirst({
-      where: {
-        id: requestedTo,
-      },
-      select: {
-        contact_name: true,
-        contact_number: true,
-      },
+    // const response = await prisma.profile.findFirst({
+    //   where: {
+    //     id: requestedTo,
+    //   },
+    //   select: {
+    //     contact_name: true,
+    //     contact_number: true,
+    //   },
+    // });
+
+    const response = await prisma.$transaction(async (x) => {
+      const response = await x.profile.findFirst({
+        where: {
+          id: requestedTo,
+        },
+        select: {
+          contact_name: true,
+          contact_number: true,
+        },
+      });
+
+      await x.notification.create({
+        data: {
+          notification_type: NotificationType.PhoneNumberView,
+          profile_id: requestedTo,
+        },
+      });
+
+      return response;
     });
 
     const mobile_number = response?.contact_number?.toString();
@@ -487,10 +536,6 @@ export const getRequestReceivedService = async (id: number, status: string) => {
   } else {
     return;
   }
-  const something = await prisma.contact.findMany({
-    where: { requested_to: id },
-  });
-  console.log("something, ", id);
 
   const response = await prisma.contact.findMany({
     where: {
@@ -685,5 +730,82 @@ export const updateOneProfileField = async (
     return response;
   } catch (error) {
     return error;
+  }
+};
+
+type NotificationTypeCounts = {
+  [key in NotificationType]: number;
+};
+
+export const getNotificationTypeCountsService = async (
+  profileId: number
+): Promise<NotificationTypeCounts> => {
+  try {
+    const latestRecord = await prisma.notification.findFirst({
+      orderBy: {
+        timestamp: "desc",
+      },
+    });
+
+    // Initialize the result object with all types set to 0
+    const formattedCounts: NotificationTypeCounts = {
+      RequestReceived: 0,
+      RequestAccepted: 0,
+      RequestDeclined: 0,
+      ProfileView: 0,
+      PhoneNumberView: 0,
+    };
+
+    if (!latestRecord) {
+      console.log("No records found");
+      return formattedCounts;
+    }
+
+    if (latestRecord.is_viewed) {
+      console.log("Latest record has x field as true");
+      return formattedCounts;
+    }
+
+    const counts = await prisma.notification.groupBy({
+      where: { profile_id: profileId },
+      by: ["notification_type"],
+      _count: {
+        notification_type: true,
+      },
+    });
+
+    // Update counts based on the query result
+    counts.forEach((item) => {
+      formattedCounts[item.notification_type] = item._count.notification_type;
+    });
+
+    console.log("Notification Type Counts:", formattedCounts);
+    return formattedCounts;
+  } catch (error) {
+    console.error("Error fetching notification type counts:", error);
+    throw error;
+  }
+};
+
+export const getViewNotificationService = async (
+  page: number,
+  profileId: number
+) => {
+  const pageSize = 10;
+  const skip = (page - 1) * pageSize;
+  try {
+    const response = prisma.notification.findMany({
+      where: {
+        profile_id: profileId,
+      },
+      orderBy: { timestamp: "desc" },
+      skip: skip,
+      take: pageSize,
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching notification type counts:", error);
+    throw error;
   }
 };

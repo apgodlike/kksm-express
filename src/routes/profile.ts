@@ -5,6 +5,7 @@ import {
   deleteImageController,
   deleteShortlistController,
   getContactStatusController,
+  getNotificationTypeCountsController,
   getPresignedUrlController,
   getProfile,
   getRequestReceivedController,
@@ -12,6 +13,7 @@ import {
   getShortlistedController,
   getSuggestedProfiles,
   getUserProfile,
+  getViewNotificationController,
   postAcceptRequestController,
   postDeclineRequestController,
   postPhoneNumberController,
@@ -33,7 +35,7 @@ router.post(
   saveProfile
 );
 
-router.get("/id/:id", authenticateToken, getProfile);
+router.get("/id/:id", authenticateToken, getProfile); //Notification
 
 router.get("/getuserprofile", authenticateToken, getUserProfile);
 
@@ -53,19 +55,19 @@ router.post(
   authenticateToken,
   validateRequest(sendRequestSchema),
   postSendRequestController
-);
+); //Notification Done
 
 router.post("/shortlist", authenticateToken, postShortlistController);
 
 router.delete("/shortlist", authenticateToken, deleteShortlistController);
 
-router.post("/viewphonenumber", authenticateToken, postPhoneNumberController);
+router.post("/viewphonenumber", authenticateToken, postPhoneNumberController); //Notification Done
 
 router.get("/requestreceived", authenticateToken, getRequestReceivedController);
 
-router.post("/acceptrequest", authenticateToken, postAcceptRequestController);
+router.post("/acceptrequest", authenticateToken, postAcceptRequestController); //Notification Done
 
-router.post("/declinerequest", authenticateToken, postDeclineRequestController);
+router.post("/declinerequest", authenticateToken, postDeclineRequestController); //Notification Done
 
 router.get("/shortlisted", authenticateToken, getShortlistedController);
 
@@ -74,5 +76,17 @@ router.get("/presignedurl", authenticateToken, getPresignedUrlController);
 router.delete("/deleteimage", authenticateToken, deleteImageController);
 
 router.get("/contactstatus", authenticateToken, getContactStatusController);
+
+router.get(
+  "/notificationcount",
+  authenticateToken,
+  getNotificationTypeCountsController
+);
+
+router.get(
+  "/viewnotification/:page",
+  authenticateToken,
+  getViewNotificationController
+);
 
 export default router;
