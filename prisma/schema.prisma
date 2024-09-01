@@ -52,7 +52,8 @@ image_4     String?
 image_5     String?
 contact_name String?
 contact_number String?
-notification Notification[]
+notification Notification[]  @relation("profile_id")
+notification_sent Notification[]  @relation("sent_profile_id")
 created_at DateTime @default(now())
 user_id     Int     @unique
 user        User   @relation(fields: [user_id], references: [id])
@@ -159,6 +160,8 @@ model Notification{
   is_viewed Boolean @default(false)
   viewed_at DateTime?
   profile_id  Int
-  profile     Profile @relation(fields: [profile_id],references: [id])
+  profile     Profile @relation("profile_id", fields: [profile_id],references: [id])
+  sent_profile_id Int
+  sent_profile  Profile @relation("sent_profile_id", fields: [sent_profile_id],references: [id])
   notification_type NotificationType
 }

@@ -347,6 +347,7 @@ export const postSendRequestService = async (
         data: {
           notification_type: NotificationType.RequestReceived,
           profile_id: requestedTo,
+          sent_profile_id: requestedBy,
         },
       });
       return response;
@@ -378,6 +379,7 @@ export const postAcceptRequestService = async (
         data: {
           notification_type: NotificationType.RequestAccepted,
           profile_id: requestedBy,
+          sent_profile_id: acceptedBy,
         },
       });
       return response;
@@ -409,6 +411,7 @@ export const postDeclineRequestService = async (
         data: {
           notification_type: NotificationType.RequestDeclined,
           profile_id: requestedBy,
+          sent_profile_id: declinedBy,
         },
       });
       return response;
@@ -500,6 +503,7 @@ export const postPhoneNumberService = async (
         data: {
           notification_type: NotificationType.PhoneNumberView,
           profile_id: requestedTo,
+          sent_profile_id: requestedBy,
         },
       });
 
@@ -797,6 +801,14 @@ export const getViewNotificationService = async (
     const response = prisma.notification.findMany({
       where: {
         profile_id: profileId,
+      },
+      include: {
+        sent_profile: {
+          select: {
+            name: true,
+            image_1: true,
+          },
+        },
       },
       orderBy: { timestamp: "desc" },
       skip: skip,
