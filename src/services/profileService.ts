@@ -739,6 +739,8 @@ export const updateOneProfileField = async (
 
 type NotificationTypeCounts = {
   [key in NotificationType]: number;
+} & {
+  totalCount: number;
 };
 
 export const getNotificationTypeCountsService = async (
@@ -758,6 +760,7 @@ export const getNotificationTypeCountsService = async (
       RequestDeclined: 0,
       ProfileView: 0,
       PhoneNumberView: 0,
+      totalCount: 0,
     };
 
     if (!latestRecord) {
@@ -781,6 +784,7 @@ export const getNotificationTypeCountsService = async (
     // Update counts based on the query result
     counts.forEach((item) => {
       formattedCounts[item.notification_type] = item._count.notification_type;
+      formattedCounts.totalCount += item._count.notification_type;
     });
 
     console.log("Notification Type Counts:", formattedCounts);
@@ -798,21 +802,35 @@ export const getViewNotificationService = async (
   const pageSize = 10;
   const skip = (page - 1) * pageSize;
   try {
-    const response = prisma.notification.findMany({
-      where: {
-        profile_id: profileId,
-      },
-      include: {
-        sent_profile: {
-          select: {
-            name: true,
-            image_1: true,
+    const response = await prisma.$transaction(async (x) => {
+      const response = await x.notification.findMany({
+        where: {
+          profile_id: profileId,
+        },
+        include: {
+          sent_profile: {
+            select: {
+              name: true,
+              image_1: true,
+              id: true,
+            },
           },
         },
-      },
-      orderBy: { timestamp: "desc" },
-      skip: skip,
-      take: pageSize,
+        orderBy: { timestamp: "desc" },
+        skip: skip,
+        take: pageSize,
+      });
+
+      await x.notification.updateMany({
+        where: {
+          profile_id: profileId,
+          id: { in: response.map((item) => item.id) },
+        },
+        data: {
+          is_viewed: true,
+        },
+      });
+      return response;
     });
 
     return response;
