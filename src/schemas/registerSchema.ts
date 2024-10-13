@@ -14,6 +14,7 @@ export const registerSchema = z.object({
     message: "Invalid mobile number format. Must be 10 digits.",
   }),
   kulam: z.string().min(1).max(100), // Adjust max as per your requirements
+  otp: z.string(),
 });
 
 // This type can be used for type checking in your controller/service

@@ -101,9 +101,11 @@ export const getProfileById = async (
 export const getProfileByUserId = async (
   id: number
 ): Promise<Profile | null> => {
-  return await prisma.profile.findUnique({
+  const response = await prisma.profile.findUnique({
     where: { user_id: id },
   });
+
+  return response;
 };
 
 export const getSuggestedProfilesService = async (
@@ -828,6 +830,7 @@ export const getViewNotificationService = async (
         },
         data: {
           is_viewed: true,
+          viewed_at: new Date(Date.now()),
         },
       });
       return response;

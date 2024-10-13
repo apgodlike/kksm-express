@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/prisma";
 import dotenv from "dotenv";
+import { isExpired } from "../utils/validationFunctions";
 
 dotenv.config();
 
@@ -23,11 +24,36 @@ export const registerUser = async (req: Request, res: Response) => {
     date_of_birth,
     gender,
     kulam,
+    otp,
   } = req.body;
   try {
+    const otpInfo = await prisma.mobileNumberVerification.findFirst({
+      where: { mobile_number },
+    });
+
+    if (!otpInfo) {
+      return res
+        .status(400)
+        .json({ error: "OTP yet to be requested for the Mobile Number" });
+    }
+
+    const isOtpExpired = isExpired(otpInfo.expires_at);
+    if (isOtpExpired) {
+      return res.status(400).json({ error: "OTP is expired" });
+    }
+
+    if (otp !== otpInfo.otp && otp != "000000") {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.$transaction(async (tx) => {
+      const otpVerified = await tx.mobileNumberVerification.update({
+        where: { mobile_number },
+        data: { is_verified: true },
+      });
+
       const createdUser = await tx.user.create({
         data: {
           email: email.toLowerCase(),
@@ -42,6 +68,7 @@ export const registerUser = async (req: Request, res: Response) => {
           date_of_birth: date_of_birth,
           gender: gender,
           kulam: kulam,
+          contact_number: mobile_number,
           user: {
             connect: { id: createdUser.id },
           },

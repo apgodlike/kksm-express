@@ -13,6 +13,7 @@ model MobileNumberVerification {
   otp String
   expires_at DateTime
   is_verified Boolean @default(false)
+  otp_generated_count Int @default(1)
 }
 
 model User {

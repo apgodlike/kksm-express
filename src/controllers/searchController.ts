@@ -54,6 +54,7 @@ export const regularSearchController = async (req: Request, res: Response) => {
         kulam: profile.kulam,
         education: profile.education,
         employment_type: profile.employment_type,
+        image_1: profile.image_1,
       })),
       currentPage: result.currentPage,
       totalPages: result.totalPages,
