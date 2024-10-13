@@ -8,6 +8,11 @@ dotenv.config();
 
 const { JWT_SECRET } = process.env;
 
+export const otpService = async (req: Request, res: Response) => {
+  const mobileNumber = req.body.mobile_number;
+  // await prisma.mobileNumberVerification.c;
+};
+
 export const registerUser = async (req: Request, res: Response) => {
   const {
     email,

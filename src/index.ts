@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import userRouter from "./routes/user";
 import searchRouter from "./routes/search";
 import profileRouter from "./routes/profile";
+import emailRouter from "./routes/email";
 import { authenticateToken } from "./middlewares/authMiddleware";
 import cors from "cors";
 
@@ -52,6 +53,8 @@ app.use("/api/v1/search", searchRouter);
 // GET - suggessions
 
 // GET - results
+
+app.use("/api/v1/email", emailRouter);
 
 app.get(
   "/test",

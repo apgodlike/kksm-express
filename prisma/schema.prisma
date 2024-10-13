@@ -7,6 +7,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model MobileNumberVerification {
+  id Int @id @default(autoincrement())
+  mobile_number BigInt @unique
+  otp String
+  expires_at DateTime
+  is_verified Boolean @default(false)
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
