@@ -18,6 +18,7 @@ export interface RegularSearchParams {
   gender: Gender;
   page: number;
   page_size: number;
+  profileId: number;
 }
 
 export interface PaginatedResult<T> {

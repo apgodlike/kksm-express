@@ -37,25 +37,15 @@ export const regularSearchController = async (req: Request, res: Response) => {
       gender: oppositeGender,
       page: pageNumber ? Number(req.params.page) : 1,
       page_size: page_size ? Number(page_size) : 10,
+      profileId: profile.id,
     };
-
-    console.log("reg");
-    console.log(searchParams);
 
     // Call the service
     const result = await regularSearchProfileService(searchParams);
 
     // Transform the result if necessary
     const response: ProfilesResponse = {
-      profiles: result.data.map((profile) => ({
-        id: profile.id,
-        name: profile.name,
-        date_of_birth: profile.date_of_birth,
-        kulam: profile.kulam,
-        education: profile.education,
-        employment_type: profile.employment_type,
-        image_1: profile.image_1,
-      })),
+      profiles: result.data,
       currentPage: result.currentPage,
       totalPages: result.totalPages,
     };
