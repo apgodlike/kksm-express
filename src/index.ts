@@ -29,6 +29,15 @@ app.use(
     credentials: true,
   })
 );
+
+/* [
+  "http://localhost:3000",
+  "http://192.168.29.126:3000",
+  //   "http://192.168.140.1:3000",
+  "https://kksm.ddns.net",
+  //   "https://49.47.217.4",
+  "https://kksm.vercel.app",
+], */
 // post login, post register, post details, get details of particular profile
 // /api/v1/user
 // app.use("/api/v1/auth", authRoutes);
