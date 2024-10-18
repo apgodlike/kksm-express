@@ -57,7 +57,6 @@ export const otpVerificationService = async (req: Request, res: Response) => {
           mobile_number,
         },
         data: {
-          mobile_number: mobile_number,
           otp,
           otp_generated_count:
             mobileNumberResponse.otp_generated_count >= 3

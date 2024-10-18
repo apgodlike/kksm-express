@@ -15,5 +15,6 @@ router.post(
   validateRequest(mobileOtpSchema),
   otpVerificationService
 );
+router.post("/");
 
 export default router;

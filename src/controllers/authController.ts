@@ -59,6 +59,9 @@ export const registerUser = async (req: Request, res: Response) => {
           email: email.toLowerCase(),
           password: hashedPassword,
           mobile_number: Number(mobile_number),
+          mobile_number_verification: {
+            connect: { id: otpVerified.id },
+          },
         },
       });
       const createdProfile = await tx.profile.create({
