@@ -19,7 +19,6 @@ model MobileNumberVerification {
 
 model ChangePasswordVerification {
   id Int @id @default(autoincrement())
-  mobile_number BigInt
   otp String
   expires_at DateTime
   is_verified Boolean @default(false)

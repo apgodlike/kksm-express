@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Prisma, PrismaClient } from "@prisma/client";
 import prisma from "../utils/prisma";
 import { isExpirationMoreThan24HoursFromNow } from "../utils/validationFunctions";
+import { generateOtp } from "./otpService";
 
 export const otpVerificationService = async (req: Request, res: Response) => {
   try {
@@ -40,7 +41,7 @@ export const otpVerificationService = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Mobile Number Already Verified" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp();
 
     if (mobileNumberResponse) {
       const isValid = isExpirationMoreThan24HoursFromNow(
@@ -95,4 +96,29 @@ export const otpVerificationService = async (req: Request, res: Response) => {
     console.error("Error in OTP verification service:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
+};
+
+export const forgetPasswordService = async (userId: number) => {
+  const otp = generateOtp();
+
+  const otpVerification = await prisma.changePasswordVerification.upsert({
+    where: {
+      user_id: userId, // Assuming userId is the unique identifier
+    },
+    update: {
+      otp: otp,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000),
+      otp_generated_count: {
+        increment: 1, // Increment the existing count by 1
+      },
+    },
+    create: {
+      otp: otp,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000),
+      otp_generated_count: 1,
+      user: { connect: { id: userId } },
+    },
+  });
+
+  return otpVerification;
 };
