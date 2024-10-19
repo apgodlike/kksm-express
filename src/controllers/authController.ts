@@ -160,13 +160,12 @@ export const forgetPasswordController = async (req: Request, res: Response) => {
 export const changePasswordController = async (req: Request, res: Response) => {
   const mobileNumber = req.body.mobile_number;
   // @ts-ignore
-  const userId = req.userId;
+  const userId = req.user.userId;
   const userRecord = await getUserRecord(userId);
+  console.log("userId: ", userId);
 
   if (!userRecord || !userId) {
-    return res
-      .status(400)
-      .json({ error: "Phone Number does not exist. Please register." });
+    return res.status(400).json({ error: "Mobile Number does not match." });
   }
 
   if (mobileNumber != userRecord.mobile_number) {
@@ -184,7 +183,7 @@ export const changePasswordController = async (req: Request, res: Response) => {
   }
 
   const response = await forgetPasswordService(userRecord.id);
-  res.json(response);
+  res.json({ otp: response.otp });
 };
 
 export const validateOtpController = async (req: Request, res: Response) => {
@@ -235,7 +234,7 @@ export const validateAsLoggedInOtpController = async (
   try {
     const otp = req.body.otp;
     // @ts-ignore
-    const userId = req.userId;
+    const userId = req.user.userId;
     const password = req.body.password;
 
     if (!userId) {
