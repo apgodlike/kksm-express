@@ -15,6 +15,7 @@ import {
   verifyIfMaxLimitReached,
 } from "../services/otpService";
 import { error } from "console";
+import { JwtPayload } from "../middlewares/authMiddleware";
 
 dotenv.config();
 
@@ -92,11 +93,15 @@ export const registerUser = async (req: Request, res: Response) => {
       return createdUser;
     });
 
-    const token = jwt.sign({ userId: newUser.id }, JWT_SECRET!, {
-      expiresIn: "24h",
-    });
+    const token = jwt.sign(
+      { userId: newUser.id, isProfileCompleted: newUser.is_profile_complete },
+      JWT_SECRET!,
+      {
+        expiresIn: "24h",
+      }
+    );
 
-    res.status(201).json({ token });
+    return res.status(201).json({ token });
   } catch (error) {
     // @ts-ignore
     if (error.code === "P2002") {
@@ -125,14 +130,26 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET!, {
-      expiresIn: "24h",
+    const token = generateJwtToken({
+      userId: user.id,
+      isProfileCompleted: user.is_profile_complete,
     });
 
     res.json({ token });
   } catch (error) {
     res.status(500).json({ error });
   }
+};
+
+export const generateJwtToken = (user: JwtPayload) => {
+  const token = jwt.sign(
+    { userId: user.userId, isProfileCompleted: user.isProfileCompleted },
+    JWT_SECRET!,
+    {
+      expiresIn: "24h",
+    }
+  );
+  return token;
 };
 
 export const forgetPasswordController = async (req: Request, res: Response) => {

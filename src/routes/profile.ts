@@ -21,7 +21,10 @@ import {
   postShortlistController,
   saveProfile,
 } from "../controllers/profileController";
-import { authenticateToken } from "../middlewares/authMiddleware";
+import {
+  authenticateCompletedProfile,
+  authenticateToken,
+} from "../middlewares/authMiddleware";
 import { regularSearchController } from "../controllers/searchController";
 import { regularSearchSchema } from "../schemas/searchSchema";
 import { sendRequestSchema } from "../schemas/sendRequestSchema";
@@ -35,57 +38,126 @@ router.post(
   saveProfile
 );
 
-router.get("/id/:id", authenticateToken, getProfile); //Notification
+router.get(
+  "/id/:id",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getProfile
+); //Notification
 
 router.get("/getuserprofile", authenticateToken, getUserProfile);
 
-router.get("/suggestedprofiles/:page", authenticateToken, getSuggestedProfiles);
+router.get(
+  "/suggestedprofiles/:page",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getSuggestedProfiles
+);
 
 router.post(
   "/regularsearch/:page",
   authenticateToken,
   validateRequest(regularSearchSchema),
+  authenticateCompletedProfile,
   regularSearchController
 );
 
-router.get("/requestsent", authenticateToken, getRequestSentController);
+router.get(
+  "/requestsent",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getRequestSentController
+);
 
 router.post(
   "/sendrequest",
   authenticateToken,
+  authenticateCompletedProfile,
   validateRequest(sendRequestSchema),
   postSendRequestController
 ); //Notification Done
 
-router.post("/shortlist", authenticateToken, postShortlistController);
+router.post(
+  "/shortlist",
+  authenticateToken,
+  authenticateCompletedProfile,
+  postShortlistController
+);
 
-router.delete("/shortlist", authenticateToken, deleteShortlistController);
+router.delete(
+  "/shortlist",
+  authenticateToken,
+  authenticateCompletedProfile,
+  deleteShortlistController
+);
 
-router.post("/viewphonenumber", authenticateToken, postPhoneNumberController); //Notification Done
+router.post(
+  "/viewphonenumber",
+  authenticateToken,
+  authenticateCompletedProfile,
+  postPhoneNumberController
+); //Notification Done
 
-router.get("/requestreceived", authenticateToken, getRequestReceivedController);
+router.get(
+  "/requestreceived",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getRequestReceivedController
+);
 
-router.post("/acceptrequest", authenticateToken, postAcceptRequestController); //Notification Done
+router.post(
+  "/acceptrequest",
+  authenticateToken,
+  authenticateCompletedProfile,
+  postAcceptRequestController
+); //Notification Done
 
-router.post("/declinerequest", authenticateToken, postDeclineRequestController); //Notification Done
+router.post(
+  "/declinerequest",
+  authenticateToken,
+  authenticateCompletedProfile,
+  postDeclineRequestController
+); //Notification Done
 
-router.get("/shortlisted", authenticateToken, getShortlistedController);
+router.get(
+  "/shortlisted",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getShortlistedController
+);
 
-router.get("/presignedurl", authenticateToken, getPresignedUrlController);
+router.get(
+  "/presignedurl",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getPresignedUrlController
+);
 
-router.delete("/deleteimage", authenticateToken, deleteImageController);
+router.delete(
+  "/deleteimage",
+  authenticateToken,
+  authenticateCompletedProfile,
+  deleteImageController
+);
 
-router.get("/contactstatus", authenticateToken, getContactStatusController);
+router.get(
+  "/contactstatus",
+  authenticateToken,
+  authenticateCompletedProfile,
+  getContactStatusController
+);
 
 router.get(
   "/notificationcount",
   authenticateToken,
+  authenticateCompletedProfile,
   getNotificationTypeCountsController
 );
 
 router.get(
   "/viewnotification/:page",
   authenticateToken,
+  authenticateCompletedProfile,
   getViewNotificationController
 );
 

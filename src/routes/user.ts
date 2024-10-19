@@ -13,7 +13,10 @@ import { loginSchema } from "../schemas/loginSchema";
 import { otpVerificationService } from "../services/emailService";
 import { mobileOtpSchema } from "../schemas/mobileOtpSchema";
 import { validateOtpSchema } from "../schemas/validateOtpSchema";
-import { authenticateToken } from "../middlewares/authMiddleware";
+import {
+  authenticateCompletedProfile,
+  authenticateToken,
+} from "../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -42,6 +45,7 @@ router.post(
 router.post(
   "/change-password-request-otp",
   authenticateToken,
+  authenticateCompletedProfile,
   validateRequest(mobileOtpSchema),
   changePasswordController
 );
@@ -49,6 +53,7 @@ router.post(
 router.post(
   "/change-password-validate-otp",
   authenticateToken,
+  authenticateCompletedProfile,
   validateRequest(validateOtpSchema),
   validateAsLoggedInOtpController
 );

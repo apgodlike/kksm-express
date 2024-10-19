@@ -22,6 +22,7 @@ import {
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
 import { Prisma } from "@prisma/client";
+import { generateJwtToken } from "./authController";
 
 export const saveProfile = async (req: Request, res: Response) => {
   try {
@@ -30,7 +31,13 @@ export const saveProfile = async (req: Request, res: Response) => {
     if (!createdProfile) {
       res.status(400).json({ message: "Something went wrong" });
     }
-    res.status(200).json({ message: "created" });
+
+    const token = generateJwtToken({
+      // @ts-ignore
+      userId: req.user.userId,
+      isProfileCompleted: true,
+    });
+    res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ error });
   }

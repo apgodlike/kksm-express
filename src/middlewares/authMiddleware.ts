@@ -10,8 +10,9 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in the environment variables");
 }
 
-interface JwtPayload {
+export interface JwtPayload {
   userId: number;
+  isProfileCompleted: boolean;
 }
 
 export const authenticateToken = (
@@ -26,15 +27,33 @@ export const authenticateToken = (
     return res.sendStatus(401);
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.sendStatus(403);
-    }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
 
-    console.log("user");
-    console.log(user);
-    (req as any).user = user as JwtPayload;
-
+      console.log("user");
+      console.log(user);
+      (req as any).user = user as JwtPayload;
+    });
     next();
-  });
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid Token" });
+  }
+};
+
+export const authenticateCompletedProfile = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // @ts-ignore
+  const isCompleted = req.user.isProfileCompleted;
+
+  if (!isCompleted) {
+    return res.status(403).json({ error: "Profile Not Compelted" });
+  }
+
+  next();
 };
