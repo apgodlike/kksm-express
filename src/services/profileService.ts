@@ -24,7 +24,7 @@ const client = new S3Client({
 
 export const saveProfileByUserId = async (
   payload: Profile,
-  user_id: Number
+  user_id: number
 ): Promise<Profile | null> => {
   //   const {
   //     profile_for,
@@ -54,6 +54,13 @@ export const saveProfileByUserId = async (
   //     image_horoscope,
   //   } = payload;
   return await prisma.$transaction(async (tx) => {
+    const userProfile = await tx.user.update({
+      where: { id: user_id },
+      data: {
+        is_profile_complete: true,
+      },
+    });
+
     const profile = await tx.profile.update({
       where: {
         // @ts-ignore
@@ -64,7 +71,6 @@ export const saveProfileByUserId = async (
         user: true,
       },
     });
-    console.log("save");
     return profile;
   });
 };

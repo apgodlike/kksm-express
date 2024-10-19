@@ -84,13 +84,14 @@ export const getUserProfile = async (req: Request, res: Response) => {
     // @ts-ignore
     const id = req.user.userId;
     const profile = await getProfileByUserId(id);
+    console.log("profileprofile", profile);
     if (profile) {
-      res.status(200).json(profile);
+      return res.status(200).json(profile);
     } else {
-      res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User not found" });
     }
   } catch (error) {
-    res.status(500).json({ error });
+    return res.status(500).json({ error });
   }
 };
 
