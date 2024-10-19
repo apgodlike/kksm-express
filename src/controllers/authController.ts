@@ -154,7 +154,7 @@ export const forgetPasswordController = async (req: Request, res: Response) => {
   }
 
   const response = await forgetPasswordService(user.id);
-  res.json(response);
+  res.json({ otp: response.otp });
 };
 
 export const changePasswordController = async (req: Request, res: Response) => {

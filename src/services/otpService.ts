@@ -5,9 +5,10 @@ export const generateOtp = () => {
 };
 
 export const verifyIfMaxLimitReached = async (userId: number) => {
-  const mobileNumberResponse = await prisma.mobileNumberVerification.findFirst({
-    where: { user: { id: userId } },
-  });
+  const mobileNumberResponse =
+    await prisma.changePasswordVerification.findFirst({
+      where: { user: { id: userId } },
+    });
 
   return mobileNumberResponse;
 };
