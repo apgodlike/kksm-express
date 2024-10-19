@@ -23,6 +23,16 @@ export const getUserWithMobileNumberService = async (mobileNumber: number) => {
   return user;
 };
 
+export const getUserRecord = async (userId: number) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
+    },
+  });
+
+  return user;
+};
+
 export const updateUserPasswordservice = async (
   userId: number,
   password: string

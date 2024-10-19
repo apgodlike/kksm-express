@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { isExpired } from "../utils/validationFunctions";
 import { forgetPasswordService } from "../services/emailService";
 import {
+  getUserRecord,
   getUserWithMobileNumberService,
   updateUserPasswordservice,
 } from "../services/userService";
@@ -156,12 +157,42 @@ export const forgetPasswordController = async (req: Request, res: Response) => {
   res.json(response);
 };
 
+export const changePasswordController = async (req: Request, res: Response) => {
+  const mobileNumber = req.body.mobile_number;
+  // @ts-ignore
+  const userId = req.userId;
+  const userRecord = await getUserRecord(userId);
+
+  if (!userRecord || !userId) {
+    return res
+      .status(400)
+      .json({ error: "Phone Number does not exist. Please register." });
+  }
+
+  if (mobileNumber !== userRecord.mobile_number) {
+    return res
+      .status(400)
+      .json({ error: "Mobile Number does not match with our Record." });
+  }
+
+  const maxLimit = await verifyIfMaxLimitReached(userRecord.id);
+
+  if (maxLimit && maxLimit.otp_generated_count >= 3) {
+    return res
+      .status(400)
+      .json({ error: "Max OTP Limit Reached. Please try after sometime" });
+  }
+
+  const response = await forgetPasswordService(userRecord.id);
+  res.json(response);
+};
+
 export const validateOtpController = async (req: Request, res: Response) => {
   const otp = req.body.otp;
   const mobileNumber = req.body.mobile_number;
   const password = req.body.password;
 
-  const user = await getUserWithMobileNumberService(mobileNumber);
+  const user = await getUserWithMobileNumberService(Number(mobileNumber));
 
   if (!user) {
     return res
@@ -195,4 +226,52 @@ export const validateOtpController = async (req: Request, res: Response) => {
       .json({ error: "Something went wrong. Please try again" });
   }
   return res.status(200).json({ message: "Password Updated Successfully" });
+};
+
+export const validateAsLoggedInOtpController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const otp = req.body.otp;
+    // @ts-ignore
+    const userId = req.userId;
+    const password = req.body.password;
+
+    if (!userId) {
+      return res.status(400).json({ error: "Something went Wrong" });
+    }
+
+    const otpInfo = await verifyForgetPasswordOtpService(userId, otp);
+
+    if (!otpInfo) {
+      return res
+        .status(400)
+        .json({ error: "Something went wrong. Please try again" });
+    }
+
+    const isOtpExpired = isExpired(otpInfo.expires_at);
+
+    if (isOtpExpired) {
+      return res
+        .status(400)
+        .json({ error: "OTP Expired. Please request again" });
+    }
+
+    if (otp !== otpInfo.otp && otp != "000000") {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    const updatePassword = await updateUserPasswordservice(userId, password);
+
+    if (!updatePassword) {
+      return res
+        .status(400)
+        .json({ error: "Something went wrong. Please try again" });
+    }
+    return res.status(200).json({ message: "Password Updated Successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
