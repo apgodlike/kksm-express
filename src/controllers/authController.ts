@@ -137,7 +137,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const forgetPasswordController = async (req: Request, res: Response) => {
   const mobileNumber = req.body.mobile_number;
-  const user = await getUserWithMobileNumberService(mobileNumber);
+  const user = await getUserWithMobileNumberService(Number(mobileNumber));
 
   if (!user) {
     return res
@@ -169,7 +169,7 @@ export const changePasswordController = async (req: Request, res: Response) => {
       .json({ error: "Phone Number does not exist. Please register." });
   }
 
-  if (mobileNumber !== userRecord.mobile_number) {
+  if (mobileNumber != userRecord.mobile_number) {
     return res
       .status(400)
       .json({ error: "Mobile Number does not match with our Record." });
