@@ -23,13 +23,25 @@ import {
 import { regularSearchProfileService } from "../services/regularSearchService";
 import { Prisma } from "@prisma/client";
 import { generateJwtToken } from "./authController";
+import { getUserRecord } from "../services/userService";
 
 export const saveProfile = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
-    const createdProfile = await saveProfileByUserId(req.body, req.user.userId);
+    const userRecord = await getUserRecord(req.user.userId);
+
+    if (!userRecord) {
+      return res.status(400).json({ message: "Something went wrong" });
+    }
+
+    const createdProfile = await saveProfileByUserId(req.body, userRecord.id);
+
     if (!createdProfile) {
       res.status(400).json({ message: "Something went wrong" });
+    }
+
+    if (userRecord?.is_profile_complete) {
+      return res.status(201).json({ message: "Profile Updated Successfully" });
     }
 
     const token = generateJwtToken({
@@ -37,7 +49,8 @@ export const saveProfile = async (req: Request, res: Response) => {
       userId: req.user.userId,
       isProfileCompleted: true,
     });
-    res.status(200).json({ token });
+
+    return res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ error });
   }
