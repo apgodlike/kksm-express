@@ -302,12 +302,12 @@ export const getCheckSubscriptionController = async (
     // @ts-ignore
     const userId = req.user.userId;
 
-    if (userId) {
+    if (!userId) {
       return res.status(404).json({ error: "User Not Found" });
     }
 
     const { isSubscribed, message } = await checkSubscription(userId);
-    res.json({ is_subscribed: isSubscribed, message });
+    return res.status(200).json({ is_subscribed: isSubscribed, message });
   } catch (error) {
     console.error("Error checking subscription:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -323,24 +323,33 @@ export const postSubscriptionController = async (
     const userId = req.user.userId;
     const requestedSubscription = req.body.request_subscription;
 
-    if (userId) {
+    if (!userId) {
       return res.status(404).json({ error: "User Not Found" });
     }
 
     const { isSubscribed, message } = await checkSubscription(userId);
 
     if (isSubscribed) {
-      return res.send(400).json({ error: "Already Subscribed" });
+      return res.status(400).json({ error: "Already Subscribed" });
+    }
+    if (!requestedSubscription) {
+      return res.status(400).json({ error: "Subscription Not Requested" });
     }
     const response = await enableSixMonthsSubscription(userId);
 
-    if (!response) {
+    if (!response || !response.expires_at) {
       return res.status(400).json({ error: "Something went wrong" });
     }
 
-    return res
-      .send(200)
-      .json({ expires_at: response.expires_at, message: "Subscribed" });
+    const now = new Date();
+
+    if (response.expires_at < now) {
+      return res
+        .send(200)
+        .json({ is_subscribed: false, message: "Subscription has expired" });
+    }
+
+    return res.status(200).json({ is_subscribed: true, message: "Subscribed" });
   } catch (error) {
     console.error("Error updating subscription:", error);
     res.status(500).json({ error: "Internal server error" });
