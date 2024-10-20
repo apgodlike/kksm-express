@@ -332,11 +332,15 @@ export const postSubscriptionController = async (
     if (isSubscribed) {
       return res.send(400).json({ error: "Already Subscribed" });
     }
-    const response = enableSixMonthsSubscription(userId);
+    const response = await enableSixMonthsSubscription(userId);
 
     if (!response) {
       return res.status(400).json({ error: "Something went wrong" });
     }
+
+    return res
+      .send(200)
+      .json({ expires_at: response.expires_at, message: "Subscribed" });
   } catch (error) {
     console.error("Error updating subscription:", error);
     res.status(500).json({ error: "Internal server error" });
