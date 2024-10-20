@@ -6,6 +6,7 @@ import {
   forgetPasswordController,
   getCheckSubscriptionController,
   loginUser,
+  postSubscriptionController,
   registerUser,
   validateAsLoggedInOtpController,
   validateOtpController,
@@ -36,6 +37,8 @@ router.get(
   authenticateToken,
   getCheckSubscriptionController
 );
+
+router.post("/subscription", authenticateToken, postSubscriptionController);
 
 router.post(
   "/forget-password-request-otp",

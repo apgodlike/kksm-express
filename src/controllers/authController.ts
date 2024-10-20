@@ -7,6 +7,7 @@ import { isExpired } from "../utils/validationFunctions";
 import { forgetPasswordService } from "../services/emailService";
 import {
   checkSubscription,
+  enableSixMonthsSubscription,
   getUserRecord,
   getUserWithMobileNumberService,
   updateUserPasswordservice,
@@ -309,6 +310,35 @@ export const getCheckSubscriptionController = async (
     res.json({ is_subscribed: isSubscribed, message });
   } catch (error) {
     console.error("Error checking subscription:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const postSubscriptionController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.userId;
+    const requestedSubscription = req.body.request_subscription;
+
+    if (userId) {
+      return res.status(404).json({ error: "User Not Found" });
+    }
+
+    const { isSubscribed, message } = await checkSubscription(userId);
+
+    if (isSubscribed) {
+      return res.send(400).json({ error: "Already Subscribed" });
+    }
+    const response = enableSixMonthsSubscription(userId);
+
+    if (!response) {
+      return res.status(400).json({ error: "Something went wrong" });
+    }
+  } catch (error) {
+    console.error("Error updating subscription:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

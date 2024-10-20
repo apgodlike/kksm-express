@@ -74,3 +74,34 @@ export async function checkSubscription(
   // If we've reached here, the user has an active subscription
   return { isSubscribed: true, message: "Subscription is active" };
 }
+
+export async function enableSixMonthsSubscription(userId: number) {
+  const date = calculateDateSixMonthsFromNow();
+
+  const response = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      expires_at: date,
+    },
+  });
+  return response;
+}
+
+function calculateDateSixMonthsFromNow(): Date {
+  const now = new Date();
+
+  // Create a new date object for the future date
+  const futureDate = new Date(now);
+
+  // Add 6 months to the current date
+  futureDate.setMonth(futureDate.getMonth() + 6);
+
+  // If the day of the month in the future date is less than the current day,
+  // it means we've rolled over to the next month (e.g., Jan 31 + 1 month = Feb 28/29)
+  // In this case, set the date to the last day of the correct month
+  if (futureDate.getDate() < now.getDate()) {
+    futureDate.setDate(0);
+  }
+
+  return futureDate;
+}
