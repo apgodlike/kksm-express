@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { isExpired } from "../utils/validationFunctions";
 import { forgetPasswordService } from "../services/emailService";
 import {
+  checkSubscription,
   getUserRecord,
   getUserWithMobileNumberService,
   updateUserPasswordservice,
@@ -289,5 +290,25 @@ export const validateAsLoggedInOtpController = async (
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getCheckSubscriptionController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.userId;
+
+    if (userId) {
+      return res.status(404).json({ error: "User Not Found" });
+    }
+
+    const { isSubscribed, message } = await checkSubscription(userId);
+    res.json({ is_subscribed: isSubscribed, message });
+  } catch (error) {
+    console.error("Error checking subscription:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

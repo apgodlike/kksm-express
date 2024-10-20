@@ -4,6 +4,7 @@ import { registerSchema } from "../schemas/registerSchema";
 import {
   changePasswordController,
   forgetPasswordController,
+  getCheckSubscriptionController,
   loginUser,
   registerUser,
   validateAsLoggedInOtpController,
@@ -28,6 +29,12 @@ router.post(
   "/requestmobilenumberotp",
   validateRequest(mobileOtpSchema),
   otpVerificationService
+);
+
+router.get(
+  "/check-subscription",
+  authenticateToken,
+  getCheckSubscriptionController
 );
 
 router.post(

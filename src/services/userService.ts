@@ -50,3 +50,27 @@ export const updateUserPasswordservice = async (
 
   return updateUser;
 };
+
+export async function checkSubscription(
+  userId: number
+): Promise<{ isSubscribed: boolean; message: string }> {
+  const userRecord = await getUserRecord(userId);
+
+  if (!userRecord) {
+    throw new Error("User Not Found");
+  }
+
+  // If expires_at is null, the user has never subscribed
+  if (!userRecord.expires_at) {
+    return { isSubscribed: false, message: "User has never subscribed" };
+  }
+
+  // Check if the subscription has expired
+  const now = new Date();
+  if (userRecord.expires_at < now) {
+    return { isSubscribed: false, message: "Subscription has expired" };
+  }
+
+  // If we've reached here, the user has an active subscription
+  return { isSubscribed: true, message: "Subscription is active" };
+}
