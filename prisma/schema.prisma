@@ -34,11 +34,47 @@ model User {
   mobile_number BigInt
   created_at DateTime @default(now())
   is_profile_complete Boolean @default(false)
+  expires_at DateTime?
   profile   Profile?
+  payment Payment[]
   profile_views ProfileViews[]
   change_password_verification ChangePasswordVerification?
   mobile_number_verification_id Int @unique
   mobile_number_verification MobileNumberVerification @relation(fields: [mobile_number_verification_id],references: [id])
+}
+
+model Payment {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  amount            Decimal  @db.Decimal(10, 2)
+  status            PaymentStatus
+  payment_method    PaymentMethod
+  payment_id        String   @unique // External payment gateway's ID
+  transaction_id    String?  @unique // Your internal transaction ID if needed
+  description       String?
+  metadata          Json?    // For any additional data
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  user              User     @relation(fields: [user_id], references: [id])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  UPI
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  PAYPAL
+  STRIPE
+  RAZORPAY
+  // Add other payment methods as needed
 }
 
 model Profile {
