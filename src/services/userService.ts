@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import prisma from "../utils/prisma";
 import bcrypt from "bcryptjs";
 
@@ -105,3 +106,13 @@ function calculateDateSixMonthsFromNow(): Date {
 
   return futureDate;
 }
+
+export const deactivateAccountService = async (userId: number) => {
+  const response: User = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      is_deactivated: true,
+    },
+  });
+  return response;
+};

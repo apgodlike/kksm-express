@@ -3,6 +3,7 @@ import { validateRequest } from "../middlewares/validateRequest";
 import { registerSchema } from "../schemas/registerSchema";
 import {
   changePasswordController,
+  deactivateAccountController,
   forgetPasswordController,
   getCheckSubscriptionController,
   loginUser,
@@ -19,6 +20,7 @@ import {
   authenticateCompletedProfile,
   authenticateToken,
 } from "../middlewares/authMiddleware";
+import { deactivateAccountSchema } from "../schemas/deactivateAccountSchema";
 
 const router = Router();
 
@@ -66,6 +68,13 @@ router.post(
   authenticateCompletedProfile,
   validateRequest(validateOtpSchema),
   validateAsLoggedInOtpController
+);
+
+router.post(
+  "/deactivate-account",
+  authenticateToken,
+  validateRequest(deactivateAccountSchema),
+  deactivateAccountController
 );
 
 export default router;

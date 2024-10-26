@@ -7,6 +7,7 @@ import { isExpired } from "../utils/validationFunctions";
 import { forgetPasswordService } from "../services/emailService";
 import {
   checkSubscription,
+  deactivateAccountService,
   enableSixMonthsSubscription,
   getUserRecord,
   getUserWithMobileNumberService,
@@ -18,6 +19,7 @@ import {
 } from "../services/otpService";
 import { error } from "console";
 import { JwtPayload } from "../middlewares/authMiddleware";
+import { PostDeactivateAccountDto } from "../dto/postDeactivateAccountDto";
 
 dotenv.config();
 
@@ -353,5 +355,27 @@ export const postSubscriptionController = async (
   } catch (error) {
     console.error("Error updating subscription:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const deactivateAccountController = async (
+  req: Request<{}, {}, PostDeactivateAccountDto>,
+  res: Response
+) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.userId;
+    const { deactivate_account } = req.body;
+    if (!deactivate_account) {
+      return res.status(400).json({ error: "Deactivation Not Requested" });
+    }
+
+    const response = await deactivateAccountService(userId);
+    if (response.is_deactivated) {
+      return res.status(200).json({ is_deactivated: true });
+    }
+    return res.status(400).json({ error: "Account Not Deleted" });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };

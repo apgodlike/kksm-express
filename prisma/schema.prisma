@@ -34,6 +34,7 @@ model User {
   mobile_number BigInt
   created_at DateTime @default(now())
   is_profile_complete Boolean @default(false)
+  is_deactivated Boolean @default(false)
   expires_at DateTime?
   profile   Profile?
   payment Payment[]
