@@ -6,5 +6,6 @@ export const regularSearchSchema = z.object({
     age_to: z.string(),
     recent_profile: z.string(),
     location: z.string(),
+    page: z.string(),
   }),
 });

@@ -55,7 +55,7 @@ router.get(
 );
 
 router.post(
-  "/regularsearch/:page",
+  "/regularsearch",
   authenticateToken,
   validateRequest(regularSearchSchema),
   authenticateCompletedProfile,

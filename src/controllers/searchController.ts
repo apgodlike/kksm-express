@@ -10,10 +10,10 @@ import {
 export const regularSearchController = async (req: Request, res: Response) => {
   try {
     // Extract and transform the data
-    const { age_from, age_to, location, recent_profile, page_size } =
+    const { age_from, age_to, location, recent_profile, page_size, page } =
       req.body.searchTerm;
 
-    const pageNumber = Number(req.params.page);
+    // const pageNumber = Number(req.params.page);
 
     // @ts-ignore
     const profile = await getProfileByUserId(req.user.userId);
@@ -35,7 +35,7 @@ export const regularSearchController = async (req: Request, res: Response) => {
       location,
       recent_profile,
       gender: oppositeGender,
-      page: pageNumber ? Number(req.params.page) : 1,
+      page: page ? Number(page) : 1,
       page_size: page_size ? Number(page_size) : 10,
       profileId: profile.id,
     };

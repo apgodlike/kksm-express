@@ -139,9 +139,7 @@ export const regularSearchProfileService = async (
     });
 
     const totalProfiles = await prisma.profile.count({
-      where: {
-        gender,
-      },
+      where: whereClause,
     });
 
     return {
