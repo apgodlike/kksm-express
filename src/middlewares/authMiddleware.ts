@@ -13,6 +13,7 @@ if (!JWT_SECRET) {
 export interface JwtPayload {
   userId: number;
   isProfileCompleted: boolean;
+  isActive: boolean;
 }
 
 export const authenticateToken = (
@@ -48,6 +49,13 @@ export const authenticateCompletedProfile = (
   res: Response,
   next: NextFunction
 ) => {
+  // @ts-ignore
+  const isActive = req.user.isActive;
+
+  if (!isActive) {
+    return res.status(403).json({ error: "Profile Not Active" });
+  }
+
   // @ts-ignore
   const isCompleted = req.user.isProfileCompleted;
 

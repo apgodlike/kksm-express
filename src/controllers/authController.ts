@@ -97,13 +97,21 @@ export const registerUser = async (req: Request, res: Response) => {
       return createdUser;
     });
 
-    const token = jwt.sign(
-      { userId: newUser.id, isProfileCompleted: newUser.is_profile_complete },
-      JWT_SECRET!,
-      {
-        expiresIn: "24h",
-      }
-    );
+    const now = new Date();
+
+    const token = generateJwtToken({
+      userId: newUser.id,
+      isProfileCompleted: newUser.is_profile_complete,
+      isActive: !newUser.expires_at || newUser.expires_at < now ? false : true,
+    });
+
+    // const token = jwt.sign(
+    //   { userId: newUser.id, isProfileCompleted: newUser.is_profile_complete },
+    //   JWT_SECRET!,
+    //   {
+    //     expiresIn: "24h",
+    //   }
+    // );
 
     return res.status(201).json({ token });
   } catch (error) {
@@ -134,9 +142,18 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    // Check if the subscription has expired
+    const now = new Date();
+    console.log("!user.expires_at || user.expires_at < now,", user.expires_at);
+    let isActive;
+    if (!user.expires_at || user.expires_at < now) {
+      isActive = true;
+    }
+
     const token = generateJwtToken({
       userId: user.id,
       isProfileCompleted: user.is_profile_complete,
+      isActive: !user.expires_at || user.expires_at < now ? false : true,
     });
 
     res.json({ token });
@@ -147,10 +164,14 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const generateJwtToken = (user: JwtPayload) => {
   const token = jwt.sign(
-    { userId: user.userId, isProfileCompleted: user.isProfileCompleted },
+    {
+      userId: user.userId,
+      isProfileCompleted: user.isProfileCompleted,
+      isActive: user.isActive,
+    },
     JWT_SECRET!,
     {
-      expiresIn: "24h",
+      expiresIn: "5m",
     }
   );
   return token;
@@ -351,7 +372,16 @@ export const postSubscriptionController = async (
         .json({ is_subscribed: false, message: "Subscription has expired" });
     }
 
-    return res.status(200).json({ is_subscribed: true, message: "Subscribed" });
+    const token = generateJwtToken({
+      userId: response.id,
+      isProfileCompleted: response.is_profile_complete,
+      isActive:
+        !response.expires_at || response.expires_at < now ? false : true,
+    });
+
+    return res
+      .status(200)
+      .json({ is_subscribed: true, message: "Subscribed", token });
   } catch (error) {
     console.error("Error updating subscription:", error);
     res.status(500).json({ error: "Internal server error" });

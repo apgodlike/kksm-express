@@ -43,11 +43,13 @@ export const saveProfile = async (req: Request, res: Response) => {
     if (userRecord?.is_profile_complete) {
       return res.status(201).json({ message: "Profile Updated Successfully" });
     }
-
+    const now = new Date();
     const token = generateJwtToken({
       // @ts-ignore
       userId: req.user.userId,
       isProfileCompleted: true,
+      isActive:
+        !userRecord.expires_at || userRecord.expires_at < now ? false : true,
     });
 
     return res.status(200).json({ token });
