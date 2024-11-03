@@ -28,20 +28,20 @@ export const authenticateToken = (
     return res.sendStatus(401);
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET, (err, user) => {
-      if (err) {
-        return res.sendStatus(403);
-      }
+  // try {
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.sendStatus(403);
+    }
 
-      console.log("user");
-      console.log(user);
-      (req as any).user = user as JwtPayload;
-    });
+    console.log("user");
+    console.log(user);
+    (req as any).user = user as JwtPayload;
     next();
-  } catch (error) {
-    return res.status(403).json({ error: "Invalid Token" });
-  }
+  });
+  // } catch (error) {
+  //   return res.status(403).json({ error: "Invalid Token" });
+  // }
 };
 
 export const authenticateCompletedProfile = (

@@ -24,6 +24,7 @@ app.use(
         "https://kksm.ddns.net",
         //   "https://49.47.217.4",
         "https://kksm.vercel.app",
+        "https://kovaikongumatrimony.com",
       ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
