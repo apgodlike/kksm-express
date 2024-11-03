@@ -143,12 +143,22 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const token = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
+
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        user_id: payload.userId,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
+      domain: "192.168.29.126",
     });
 
     res.json({ token, refreshToken });
@@ -161,11 +171,14 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     console.log("res.cookies", req.cookies);
+    console.log("refreshToken", refreshToken);
     if (!refreshToken) {
       return res.status(401).json({ error: "Refresh token not found" });
     }
 
     const payload = verifyRefreshToken(refreshToken);
+
+    console.log("payload", payload);
     const storedToken = await prisma.refreshToken.findFirst({
       where: {
         token: refreshToken,
@@ -173,13 +186,17 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         expiresAt: { gt: new Date() },
       },
     });
+
     if (!storedToken) {
       return res.status(401).json({ error: "Invalid refresh token" });
     }
+
     const newAccessToken = generateAccessToken(payload);
     const newRefreshToken = generateRefreshToken(payload);
 
-    await prisma.refreshToken.delete({ where: { id: storedToken.id } });
+    const ress = await prisma.refreshToken.delete({
+      where: { id: storedToken.id },
+    });
     await prisma.refreshToken.create({
       data: {
         token: newRefreshToken,
@@ -193,6 +210,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: "192.168.29.126",
     });
     res.json({ token: newAccessToken });
   } catch (error) {
@@ -231,6 +249,10 @@ export const generateRefreshToken = (user: JwtPayload) => {
 
 export const verifyRefreshToken = (token: string): JwtPayload => {
   try {
+    console.log(
+      "process.env.JWT_REFRESH_TOKEN!",
+      process.env.JWT_REFRESH_TOKEN!
+    );
     return jwt.verify(token, process.env.JWT_REFRESH_TOKEN!) as JwtPayload;
   } catch (error) {
     throw new Error("Invalid refresh token");
