@@ -23,13 +23,6 @@ import { PostDeactivateAccountDto } from "../dto/postDeactivateAccountDto";
 
 dotenv.config();
 
-const { JWT_SECRET } = process.env;
-
-export const otpService = async (req: Request, res: Response) => {
-  const mobileNumber = req.body.mobile_number;
-  // await prisma.mobileNumberVerification.c;
-};
-
 export const registerUser = async (req: Request, res: Response) => {
   const {
     email,
@@ -99,19 +92,11 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const now = new Date();
 
-    const token = generateJwtToken({
+    const token = generateAccessToken({
       userId: newUser.id,
       isProfileCompleted: newUser.is_profile_complete,
       isActive: !newUser.expires_at || newUser.expires_at < now ? false : true,
     });
-
-    // const token = jwt.sign(
-    //   { userId: newUser.id, isProfileCompleted: newUser.is_profile_complete },
-    //   JWT_SECRET!,
-    //   {
-    //     expiresIn: "24h",
-    //   }
-    // );
 
     return res.status(201).json({ token });
   } catch (error) {
@@ -150,31 +135,106 @@ export const loginUser = async (req: Request, res: Response) => {
       isActive = true;
     }
 
-    const token = generateJwtToken({
+    const payload = {
       userId: user.id,
       isProfileCompleted: user.is_profile_complete,
       isActive: !user.expires_at || user.expires_at < now ? false : true,
+    };
+
+    const token = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
 
-    res.json({ token });
+    res.json({ token, refreshToken });
   } catch (error) {
     res.status(500).json({ error });
   }
 };
 
-export const generateJwtToken = (user: JwtPayload) => {
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    console.log("res.cookies", req.cookies);
+    if (!refreshToken) {
+      return res.status(401).json({ error: "Refresh token not found" });
+    }
+
+    const payload = verifyRefreshToken(refreshToken);
+    const storedToken = await prisma.refreshToken.findFirst({
+      where: {
+        token: refreshToken,
+        user_id: payload.userId,
+        expiresAt: { gt: new Date() },
+      },
+    });
+    if (!storedToken) {
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+    const newAccessToken = generateAccessToken(payload);
+    const newRefreshToken = generateRefreshToken(payload);
+
+    await prisma.refreshToken.delete({ where: { id: storedToken.id } });
+    await prisma.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        user_id: payload.userId,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.json({ token: newAccessToken });
+  } catch (error) {
+    res.status(401).json({ error: "Invalid refresh token" });
+  }
+};
+
+export const generateAccessToken = (user: JwtPayload) => {
   const token = jwt.sign(
     {
       userId: user.userId,
       isProfileCompleted: user.isProfileCompleted,
       isActive: user.isActive,
     },
-    JWT_SECRET!,
+    process.env.JWT_ACCESS_SECRET!,
     {
-      expiresIn: "5m",
+      expiresIn: "15s",
     }
   );
   return token;
+};
+
+export const generateRefreshToken = (user: JwtPayload) => {
+  return jwt.sign(
+    {
+      userId: user.userId,
+      isProfileCompleted: user.isProfileCompleted,
+      isActive: user.isActive,
+    },
+    process.env.JWT_REFRESH_SECRET!,
+    {
+      expiresIn: "7d",
+    }
+  );
+};
+
+export const verifyRefreshToken = (token: string): JwtPayload => {
+  try {
+    return jwt.verify(token, process.env.JWT_REFRESH_TOKEN!) as JwtPayload;
+  } catch (error) {
+    throw new Error("Invalid refresh token");
+  }
 };
 
 export const forgetPasswordController = async (req: Request, res: Response) => {
@@ -368,11 +428,11 @@ export const postSubscriptionController = async (
 
     if (response.expires_at < now) {
       return res
-        .send(200)
+        .status(200)
         .json({ is_subscribed: false, message: "Subscription has expired" });
     }
 
-    const token = generateJwtToken({
+    const token = generateAccessToken({
       userId: response.id,
       isProfileCompleted: response.is_profile_complete,
       isActive:

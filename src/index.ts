@@ -6,12 +6,14 @@ import profileRouter from "./routes/profile";
 // import emailRouter from "./routes/email";
 import { authenticateToken } from "./middlewares/authMiddleware";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const port = process.env.PORT || 3010;
 
 dotenv.config();
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
@@ -28,6 +30,7 @@ app.use(
       ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 

@@ -8,6 +8,7 @@ import {
   getCheckSubscriptionController,
   loginUser,
   postSubscriptionController,
+  refreshAccessToken,
   registerUser,
   validateAsLoggedInOtpController,
   validateOtpController,
@@ -27,6 +28,7 @@ const router = Router();
 router.post("/register", validateRequest(registerSchema), registerUser);
 
 router.post("/login", validateRequest(loginSchema), loginUser);
+router.get("/refresh-token", refreshAccessToken);
 
 router.post(
   "/requestmobilenumberotp",

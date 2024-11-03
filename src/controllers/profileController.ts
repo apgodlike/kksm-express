@@ -22,7 +22,7 @@ import {
 } from "../services/profileService";
 import { regularSearchProfileService } from "../services/regularSearchService";
 import { Prisma } from "@prisma/client";
-import { generateJwtToken } from "./authController";
+import { generateAccessToken } from "./authController";
 import { getUserRecord } from "../services/userService";
 
 export const saveProfile = async (req: Request, res: Response) => {
@@ -44,7 +44,7 @@ export const saveProfile = async (req: Request, res: Response) => {
       return res.status(201).json({ message: "Profile Updated Successfully" });
     }
     const now = new Date();
-    const token = generateJwtToken({
+    const token = generateAccessToken({
       // @ts-ignore
       userId: req.user.userId,
       isProfileCompleted: true,

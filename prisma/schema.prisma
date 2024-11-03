@@ -41,8 +41,19 @@ model User {
   payment Payment[]
   profile_views ProfileViews[]
   change_password_verification ChangePasswordVerification?
+  refreshToken RefreshToken?
   mobile_number_verification_id Int @unique
   mobile_number_verification MobileNumberVerification @relation(fields: [mobile_number_verification_id],references: [id])
+}
+
+model RefreshToken {
+  id        Int   @id @default(autoincrement())
+  token     String   @unique
+  user_id    Int @unique
+  expiresAt DateTime
+  user              User     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
 }
 
 model Payment {

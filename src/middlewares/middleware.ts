@@ -12,7 +12,7 @@ export function authMiddleware(
   try {
     console.log("authMiddleware");
 
-    const decoded = jwt.verify(authHeader, JWT_SECRET);
+    const decoded = jwt.verify(authHeader, process.env.JWT_ACCESS_SECRET!);
     console.log(decoded);
 
     // @ts-ignore
