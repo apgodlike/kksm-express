@@ -22,6 +22,7 @@ import { JwtPayload } from "../middlewares/authMiddleware";
 import { PostDeactivateAccountDto } from "../dto/postDeactivateAccountDto";
 
 dotenv.config();
+const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
 
 export const registerUser = async (req: Request, res: Response) => {
   const {
@@ -144,8 +145,21 @@ export const loginUser = async (req: Request, res: Response) => {
     const token = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
-    await prisma.refreshToken.create({
-      data: {
+    // await prisma.refreshToken.create({
+    //   data: {
+    //     token: refreshToken,
+    //     user_id: payload.userId,
+    //     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    //   },
+    // });
+
+    await prisma.refreshToken.upsert({
+      where: { user_id: payload.userId },
+      update: {
+        token: refreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+      create: {
         token: refreshToken,
         user_id: payload.userId,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -225,7 +239,7 @@ export const generateAccessToken = (user: JwtPayload) => {
       isProfileCompleted: user.isProfileCompleted,
       isActive: user.isActive,
     },
-    process.env.JWT_ACCESS_SECRET!,
+    JWT_ACCESS_SECRET!,
     {
       expiresIn: "15s",
     }
@@ -240,7 +254,7 @@ export const generateRefreshToken = (user: JwtPayload) => {
       isProfileCompleted: user.isProfileCompleted,
       isActive: user.isActive,
     },
-    process.env.JWT_REFRESH_SECRET!,
+    JWT_REFRESH_SECRET!,
     {
       expiresIn: "7d",
     }
@@ -249,11 +263,8 @@ export const generateRefreshToken = (user: JwtPayload) => {
 
 export const verifyRefreshToken = (token: string): JwtPayload => {
   try {
-    console.log(
-      "process.env.JWT_REFRESH_TOKEN!",
-      process.env.JWT_REFRESH_TOKEN!
-    );
-    return jwt.verify(token, process.env.JWT_REFRESH_TOKEN!) as JwtPayload;
+    console.log("JWT_REFRESH_SECRET!", JWT_REFRESH_SECRET!);
+    return jwt.verify(token, JWT_REFRESH_SECRET!) as JwtPayload;
   } catch (error) {
     throw new Error("Invalid refresh token");
   }
