@@ -8,7 +8,7 @@ export const getCookieDomain = () => {
   switch (process.env.NODE_ENV) {
     case "production":
       // For production domain
-      return process.env.COOKIE_DOMAIN || "kksm.vercel.app"; // Use your actual domain
+      return process.env.COOKIE_DOMAIN || "vercel.app"; // Use your actual domain
 
     case "staging":
       // For staging environment if needed
