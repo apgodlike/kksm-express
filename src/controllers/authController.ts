@@ -20,6 +20,7 @@ import {
 import { error } from "console";
 import { JwtPayload } from "../middlewares/authMiddleware";
 import { PostDeactivateAccountDto } from "../dto/postDeactivateAccountDto";
+import { getCookieDomain } from "../config";
 
 dotenv.config();
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
@@ -172,7 +173,8 @@ export const loginUser = async (req: Request, res: Response) => {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: "192.168.29.126",
+      domain: getCookieDomain(),
+      // domain: "192.168.29.126",
     });
 
     res.json({ token, refreshToken });
@@ -224,7 +226,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: "192.168.29.126",
+      domain: getCookieDomain(),
+      // domain: "192.168.29.126",
     });
     console.log("newAccessToken,", newAccessToken);
     return res.status(200).json({ token: newAccessToken });
