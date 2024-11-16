@@ -173,8 +173,8 @@ export const loginUser = async (req: Request, res: Response) => {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: ".kovaikongumatrimony.com",
-      // domain: getCookieDomain(),
+      // domain: ".kovaikongumatrimony.com",
+      domain: getCookieDomain(),
       // domain: "192.168.29.126",
     });
 
@@ -227,8 +227,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: ".kovaikongumatrimony.com",
-      // domain: getCookieDomain(),
+      // domain: ".kovaikongumatrimony.com",
+      domain: getCookieDomain(),
       // domain: "192.168.29.126",
     });
     console.log("newAccessToken,", newAccessToken);
