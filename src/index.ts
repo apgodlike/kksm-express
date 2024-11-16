@@ -28,6 +28,7 @@ app.use(
         //   "https://49.47.217.4",
         "https://kksm.vercel.app",
         "https://api.kovaikongumatrimony.com",
+        "https://www.kovaikongumatrimony.com",
       ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
