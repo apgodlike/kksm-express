@@ -173,7 +173,7 @@ export const loginUser = async (req: Request, res: Response) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: "https://api.kovaikongumatrimony.com",
+      domain: "https://www.kovaikongumatrimony.com",
       // domain: getCookieDomain(),
       // domain: "192.168.29.126",
     });
@@ -227,7 +227,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: "https://api.kovaikongumatrimony.com",
+      domain: "https://www.kovaikongumatrimony.com",
       // domain: getCookieDomain(),
       // domain: "192.168.29.126",
     });
