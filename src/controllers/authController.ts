@@ -226,7 +226,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       domain: "192.168.29.126",
     });
-    res.json({ token: newAccessToken });
+    console.log("newAccessToken,", newAccessToken);
+    return res.status(200).json({ token: newAccessToken });
   } catch (error) {
     res.status(401).json({ error: "Invalid refresh token" });
   }
@@ -241,7 +242,7 @@ export const generateAccessToken = (user: JwtPayload) => {
     },
     JWT_ACCESS_SECRET!,
     {
-      expiresIn: "15s",
+      expiresIn: "15m",
     }
   );
   return token;
