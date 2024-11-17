@@ -116,3 +116,39 @@ export const deactivateAccountService = async (userId: number) => {
   });
   return response;
 };
+
+export const isUserDeletedVerifyByUserId = async (userId: number) => {
+  try {
+    const response = await prisma.user.findFirst({
+      where: { id: userId },
+      select: { is_deactivated: true },
+    });
+
+    if (!response || response.is_deactivated) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    return true;
+  }
+};
+
+export const isUserDeletedVerifyByProfileId = async (profileId: number) => {
+  try {
+    const response = await prisma.profile.findFirst({
+      where: { id: profileId },
+      select: {
+        user: {
+          select: { is_deactivated: true },
+        },
+      },
+    });
+
+    if (!response || response.user.is_deactivated) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    return true;
+  }
+};
