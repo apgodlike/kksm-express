@@ -6,6 +6,7 @@ import {
   deactivateAccountController,
   forgetPasswordController,
   getCheckSubscriptionController,
+  getLogoutUserController,
   loginUser,
   postSubscriptionController,
   refreshAccessToken,
@@ -29,6 +30,7 @@ router.post("/register", validateRequest(registerSchema), registerUser);
 
 router.post("/login", validateRequest(loginSchema), loginUser);
 router.get("/refresh-token", refreshAccessToken);
+router.get("/logout", authenticateToken, getLogoutUserController);
 
 router.post(
   "/requestmobilenumberotp",

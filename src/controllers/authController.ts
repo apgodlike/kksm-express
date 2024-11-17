@@ -238,6 +238,38 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   }
 };
 
+export const getLogoutUserController = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.userId;
+    console.log("Here");
+    console.log("userIduserId", userId);
+
+    const refreshToken = req.cookies.refreshToken;
+
+    console.log("refreshToken", refreshToken);
+
+    const response = await prisma.refreshToken.delete({
+      where: {
+        token: refreshToken,
+        user_id: userId,
+      },
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      domain: getCookieDomain(),
+      // Only include path if you specified it when setting the cookie
+    });
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({ error: error });
+  }
+};
+
 export const generateAccessToken = (user: JwtPayload) => {
   const token = jwt.sign(
     {
