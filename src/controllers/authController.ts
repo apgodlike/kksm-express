@@ -559,12 +559,12 @@ export const deleteAccountController = async (
 
     await deleteUserData(userId);
 
-    // Clear authentication cookies
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      domain: process.env.COOKIE_DOMAIN,
+      domain: getCookieDomain(),
+      // Only include path if you specified it when setting the cookie
     });
 
     return res.status(200).json({
