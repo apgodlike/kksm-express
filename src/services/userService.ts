@@ -1,6 +1,7 @@
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import prisma from "../utils/prisma";
 import bcrypt from "bcryptjs";
+import { AppError } from "../utils/AppError";
 
 export const getUserGenderSerivce = async (id: number) => {
   const userGender = await prisma.profile.findFirst({
@@ -150,5 +151,97 @@ export const isUserDeletedVerifyByProfileId = async (profileId: number) => {
     return false;
   } catch (error) {
     return true;
+  }
+};
+
+export const deleteUserData = async (userId: number): Promise<void> => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Delete notifications first (both sent and received)
+      await tx.notification.deleteMany({
+        where: {
+          OR: [
+            { profile: { user_id: userId } },
+            { sent_profile: { user_id: userId } },
+          ],
+        },
+      });
+
+      // Delete profile views
+      await tx.profileViews.deleteMany({
+        where: {
+          OR: [{ user_id: userId }, { profile: { user_id: userId } }],
+        },
+      });
+
+      // Delete contacts (both requested and received)
+      await tx.contact.deleteMany({
+        where: {
+          OR: [
+            { requested_by_profile: { user_id: userId } },
+            { requested_to_profile: { user_id: userId } },
+          ],
+        },
+      });
+
+      // Delete shortlists
+      await tx.shortlist.deleteMany({
+        where: {
+          OR: [
+            { shortlisted_by_profile: { user_id: userId } },
+            { shortlisted_profile_rel: { user_id: userId } },
+          ],
+        },
+      });
+
+      // Delete payments
+      await tx.payment.deleteMany({
+        where: { user_id: userId },
+      });
+
+      // Delete refresh token
+      await tx.refreshToken.deleteMany({
+        where: { user_id: userId },
+      });
+
+      // Delete change password verification
+      await tx.changePasswordVerification.deleteMany({
+        where: { user_id: userId },
+      });
+
+      // Delete profile
+      await tx.profile
+        .delete({
+          where: { user_id: userId },
+        })
+        .catch(() => {
+          // Profile might not exist for all users
+        });
+
+      // Get mobile verification ID before deleting user
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { mobile_number_verification_id: true },
+      });
+
+      // Delete user
+      await tx.user.delete({
+        where: { id: userId },
+      });
+
+      // Finally delete mobile number verification
+      if (user?.mobile_number_verification_id) {
+        await tx.mobileNumberVerification.delete({
+          where: { id: user.mobile_number_verification_id },
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        throw new AppError("User not found", 404);
+      }
+    }
+    throw error;
   }
 };

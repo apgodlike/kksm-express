@@ -7,6 +7,7 @@ import profileRouter from "./routes/profile";
 import { authenticateToken } from "./middlewares/authMiddleware";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./middlewares/errorHandler";
 
 const port = process.env.PORT || 3010;
 
@@ -83,5 +84,7 @@ app.get(
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
+
+app.use(errorHandler);
 
 export default app;

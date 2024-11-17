@@ -4,6 +4,7 @@ import { registerSchema } from "../schemas/registerSchema";
 import {
   changePasswordController,
   deactivateAccountController,
+  deleteAccountController,
   forgetPasswordController,
   getCheckSubscriptionController,
   getLogoutUserController,
@@ -79,6 +80,13 @@ router.post(
   authenticateToken,
   validateRequest(deactivateAccountSchema),
   deactivateAccountController
+);
+
+router.post(
+  "/delete-account",
+  authenticateToken,
+  validateRequest(deactivateAccountSchema),
+  deleteAccountController
 );
 
 export default router;

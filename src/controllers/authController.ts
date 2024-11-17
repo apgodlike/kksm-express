@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/prisma";
@@ -8,6 +8,7 @@ import { forgetPasswordService } from "../services/emailService";
 import {
   checkSubscription,
   deactivateAccountService,
+  deleteUserData,
   enableSixMonthsSubscription,
   getUserRecord,
   getUserWithMobileNumberService,
@@ -21,6 +22,7 @@ import { error } from "console";
 import { JwtPayload } from "../middlewares/authMiddleware";
 import { PostDeactivateAccountDto } from "../dto/postDeactivateAccountDto";
 import { getCookieDomain } from "../config";
+import { AppError } from "../utils/AppError";
 
 dotenv.config();
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
@@ -538,5 +540,38 @@ export const deactivateAccountController = async (
     return res.status(400).json({ error: "Account Not Deleted" });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const deleteAccountController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.userId;
+    // const userId = parseInt(req.params.userId);
+
+    if (isNaN(userId)) {
+      throw new AppError("Invalid user ID", 400);
+    }
+
+    await deleteUserData(userId);
+
+    // Clear authentication cookies
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      domain: process.env.COOKIE_DOMAIN,
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "User and associated data deleted successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };
