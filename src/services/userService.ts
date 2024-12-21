@@ -154,7 +154,7 @@ export const isUserDeletedVerifyByProfileId = async (profileId: number) => {
   }
 };
 
-export const deleteUserData = async (userId: number): Promise<void> => {
+/* export const deleteUserData = async (userId: number): Promise<void> => {
   try {
     // First verify if user exists
     const userExists = await prisma.user.findUnique({
@@ -258,3 +258,4 @@ export const deleteUserData = async (userId: number): Promise<void> => {
     throw error;
   }
 };
+ */

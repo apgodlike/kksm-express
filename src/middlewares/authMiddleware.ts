@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { auth } from "firebase-admin";
+import * as admin from "firebase-admin";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -10,13 +12,29 @@ dotenv.config();
 //   throw new Error("JWT_SECRET is not defined in the environment variables");
 // }
 
+// Initialize Firebase Admin
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  // Or use service account:
+  // credential: admin.credential.cert(require('./path-to-service-account.json'))
+});
+
+// Extend Express Request type to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: auth.DecodedIdToken;
+    }
+  }
+}
+
 export interface JwtPayload {
   userId: number;
   isProfileCompleted: boolean;
   isActive: boolean;
 }
 
-export const authenticateToken = (
+export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -28,20 +46,23 @@ export const authenticateToken = (
     return res.sendStatus(401);
   }
 
-  // try {
-  jwt.verify(token, process.env.JWT_ACCESS_SECRET!, (err, user) => {
-    if (err) {
-      return res.sendStatus(403);
-    }
+  try {
+    // jwt.verify(token, process.env.JWT_ACCESS_SECRET!, (err, user) => {
+    //   if (err) {
+    //     return res.sendStatus(403);
+    //   }
+
+    const user = await admin.auth().verifyIdToken(token);
 
     console.log("user");
     console.log(user);
-    (req as any).user = user as JwtPayload;
+    user.userId = user.uid;
+    (req as any).user = user;
     next();
-  });
-  // } catch (error) {
-  //   return res.status(403).json({ error: "Invalid Token" });
-  // }
+    // });
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid Token" });
+  }
 };
 
 export const authenticateCompletedProfile = (

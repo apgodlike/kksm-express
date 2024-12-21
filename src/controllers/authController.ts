@@ -8,7 +8,7 @@ import { forgetPasswordService } from "../services/emailService";
 import {
   checkSubscription,
   deactivateAccountService,
-  deleteUserData,
+  // deleteUserData,
   enableSixMonthsSubscription,
   getUserRecord,
   getUserWithMobileNumberService,
@@ -28,53 +28,60 @@ dotenv.config();
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
 
 export const registerUser = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.user.userId;
   const {
-    email,
-    password,
+    // email,
+    // password,
     mobile_number,
     profile_for,
     name,
     date_of_birth,
     gender,
     kulam,
-    otp,
+    // otp,
   } = req.body;
   try {
-    const otpInfo = await prisma.mobileNumberVerification.findFirst({
-      where: { mobile_number },
-    });
+    const existingUser = await prisma.user.findFirst({ where: { id: userId } });
 
-    if (!otpInfo) {
-      return res
-        .status(400)
-        .json({ error: "OTP yet to be requested for the Mobile Number" });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
+    // const otpInfo = await prisma.mobileNumberVerification.findFirst({
+    //   where: { mobile_number },
+    // });
 
-    const isOtpExpired = isExpired(otpInfo.expires_at);
-    if (isOtpExpired) {
-      return res.status(400).json({ error: "OTP is expired" });
-    }
+    // if (!otpInfo) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "OTP yet to be requested for the Mobile Number" });
+    // }
 
-    if (otp !== otpInfo.otp && otp != "000000") {
-      return res.status(400).json({ error: "Invalid OTP" });
-    }
+    // const isOtpExpired = isExpired(otpInfo.expires_at);
+    // if (isOtpExpired) {
+    //   return res.status(400).json({ error: "OTP is expired" });
+    // }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // if (otp !== otpInfo.otp && otp != "000000") {
+    //   return res.status(400).json({ error: "Invalid OTP" });
+    // }
+
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.$transaction(async (tx) => {
-      const otpVerified = await tx.mobileNumberVerification.update({
-        where: { mobile_number },
-        data: { is_verified: true },
-      });
+      // const otpVerified = await tx.mobileNumberVerification.update({
+      //   where: { mobile_number },
+      //   data: { is_verified: true },
+      // });
 
       const createdUser = await tx.user.create({
         data: {
-          email: email.toLowerCase(),
-          password: hashedPassword,
+          // email: email.toLowerCase(),
+          // password: hashedPassword,
           mobile_number: Number(mobile_number),
-          mobile_number_verification: {
-            connect: { id: otpVerified.id },
-          },
+          // mobile_number_verification: {
+          //   connect: { id: otpVerified.id },
+          // },
         },
       });
       const createdProfile = await tx.profile.create({
@@ -94,15 +101,19 @@ export const registerUser = async (req: Request, res: Response) => {
       return createdUser;
     });
 
-    const now = new Date();
+    if (!newUser) {
+      return res.status(400).json({ message: "Something went wrong" });
+    }
 
-    const token = generateAccessToken({
-      userId: newUser.id,
-      isProfileCompleted: newUser.is_profile_complete,
-      isActive: !newUser.expires_at || newUser.expires_at < now ? false : true,
-    });
+    // const now = new Date();
 
-    return res.status(201).json({ token });
+    // const token = generateAccessToken({
+    //   userId: newUser.id,
+    //   isProfileCompleted: newUser.is_profile_complete,
+    //   isActive: !newUser.expires_at || newUser.expires_at < now ? false : true,
+    // });
+
+    return res.status(201).json({ message: "Created" });
   } catch (error) {
     // @ts-ignore
     if (error.code === "P2002") {
@@ -112,7 +123,7 @@ export const registerUser = async (req: Request, res: Response) => {
     }
   }
 };
-
+/* 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -185,7 +196,7 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(500).json({ error });
   }
 };
-
+ */
 export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies.refreshToken;
@@ -543,35 +554,35 @@ export const deactivateAccountController = async (
   }
 };
 
-export const deleteAccountController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // @ts-ignore
-    const userId = req.user.userId;
-    // const userId = parseInt(req.params.userId);
+// export const deleteAccountController = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     // @ts-ignore
+//     const userId = req.user.userId;
+//     // const userId = parseInt(req.params.userId);
 
-    if (isNaN(userId)) {
-      throw new AppError("Invalid user ID", 400);
-    }
+//     if (isNaN(userId)) {
+//       throw new AppError("Invalid user ID", 400);
+//     }
 
-    await deleteUserData(userId);
+//     await deleteUserData(userId);
 
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      domain: getCookieDomain(),
-      // Only include path if you specified it when setting the cookie
-    });
+//     res.clearCookie("refreshToken", {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "strict",
+//       domain: getCookieDomain(),
+//       // Only include path if you specified it when setting the cookie
+//     });
 
-    return res.status(200).json({
-      status: "success",
-      message: "User and associated data deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     return res.status(200).json({
+//       status: "success",
+//       message: "User and associated data deleted successfully",
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };

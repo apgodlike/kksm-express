@@ -3,11 +3,12 @@ import {
   refreshAccessToken,
   registerUser,
 } from "../controllers/authController";
-import { loginUser } from "../controllers/authController";
+// import { loginUser } from "../controllers/authController";
+import { authenticateToken } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/register", authenticateToken, registerUser);
+// router.post("/login", loginUser);
 
 export default router;

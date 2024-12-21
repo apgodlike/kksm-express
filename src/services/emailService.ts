@@ -3,7 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import prisma from "../utils/prisma";
 import { isExpirationMoreThan24HoursFromNow } from "../utils/validationFunctions";
 import { generateOtp } from "./otpService";
-
+/* 
 export const otpVerificationService = async (req: Request, res: Response) => {
   try {
     // Explicitly type the request body
@@ -97,7 +97,7 @@ export const otpVerificationService = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
+ */
 export const forgetPasswordService = async (userId: number) => {
   const otp = generateOtp();
 

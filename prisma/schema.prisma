@@ -7,15 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model MobileNumberVerification {
-  id Int @id @default(autoincrement())
-  mobile_number BigInt @unique
-  otp String
-  expires_at DateTime
-  is_verified Boolean @default(false)
-  otp_generated_count Int @default(1)
-  user User?
-}
+// model MobileNumberVerification {
+//   id Int @id @default(autoincrement())
+//   mobile_number BigInt @unique
+//   otp String
+//   expires_at DateTime
+//   is_verified Boolean @default(false)
+//   otp_generated_count Int @default(1)
+//   user User?
+// }
 
 model ChangePasswordVerification {
   id Int @id @default(autoincrement())
@@ -29,8 +29,8 @@ model ChangePasswordVerification {
 
 model User {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
+  email     String?   @unique
+  password  String?
   mobile_number BigInt
   created_at DateTime @default(now())
   is_profile_complete Boolean @default(false)
@@ -42,8 +42,8 @@ model User {
   profile_views ProfileViews[]
   change_password_verification ChangePasswordVerification?
   refreshToken RefreshToken?
-  mobile_number_verification_id Int @unique
-  mobile_number_verification MobileNumberVerification @relation(fields: [mobile_number_verification_id],references: [id])
+  // mobile_number_verification_id Int @unique
+  // mobile_number_verification MobileNumberVerification @relation(fields: [mobile_number_verification_id],references: [id])
 }
 
 model RefreshToken {

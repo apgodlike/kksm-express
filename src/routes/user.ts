@@ -4,11 +4,11 @@ import { registerSchema } from "../schemas/registerSchema";
 import {
   changePasswordController,
   deactivateAccountController,
-  deleteAccountController,
+  // deleteAccountController,
   forgetPasswordController,
   getCheckSubscriptionController,
   getLogoutUserController,
-  loginUser,
+  // loginUser,
   postSubscriptionController,
   refreshAccessToken,
   registerUser,
@@ -16,7 +16,7 @@ import {
   validateOtpController,
 } from "../controllers/authController";
 import { loginSchema } from "../schemas/loginSchema";
-import { otpVerificationService } from "../services/emailService";
+// import { otpVerificationService } from "../services/emailService";
 import { mobileOtpSchema } from "../schemas/mobileOtpSchema";
 import { validateOtpSchema } from "../schemas/validateOtpSchema";
 import {
@@ -27,17 +27,22 @@ import { deactivateAccountSchema } from "../schemas/deactivateAccountSchema";
 
 const router = Router();
 
-router.post("/register", validateRequest(registerSchema), registerUser);
+router.post(
+  "/register",
+  authenticateToken,
+  validateRequest(registerSchema),
+  registerUser
+);
 
-router.post("/login", validateRequest(loginSchema), loginUser);
+// router.post("/login", validateRequest(loginSchema), loginUser);
 router.get("/refresh-token", refreshAccessToken);
 router.get("/logout", authenticateToken, getLogoutUserController);
 
-router.post(
-  "/requestmobilenumberotp",
-  validateRequest(mobileOtpSchema),
-  otpVerificationService
-);
+// router.post(
+//   "/requestmobilenumberotp",
+//   validateRequest(mobileOtpSchema),
+//   otpVerificationService
+// );
 
 router.get(
   "/check-subscription",
@@ -82,11 +87,11 @@ router.post(
   deactivateAccountController
 );
 
-router.post(
-  "/delete-account",
-  authenticateToken,
-  validateRequest(deactivateAccountSchema),
-  deleteAccountController
-);
+// router.post(
+//   "/delete-account",
+//   authenticateToken,
+//   validateRequest(deactivateAccountSchema),
+//   deleteAccountController
+// );
 
 export default router;
