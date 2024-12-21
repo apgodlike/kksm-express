@@ -23,9 +23,10 @@ import {
 import { regularSearchProfileService } from "../services/regularSearchService";
 import { Prisma } from "@prisma/client";
 import { generateAccessToken, generateRefreshToken } from "./authController";
-import { getUserRecord } from "../services/userService";
+import { getUserRecord, setUserClaims } from "../services/userService";
 import { getCookieDomain } from "../config";
 import prisma from "../utils/prisma";
+import { messaging } from "firebase-admin";
 
 export const saveProfile = async (req: Request, res: Response) => {
   try {
@@ -48,16 +49,16 @@ export const saveProfile = async (req: Request, res: Response) => {
     const now = new Date();
     //
 
-    const payload = {
-      // @ts-ignore
-      userId: req.user.userId,
-      isProfileCompleted: true,
-      isActive:
-        !userRecord.expires_at || userRecord.expires_at < now ? false : true,
-    };
+    // const payload = {
+    //   // @ts-ignore
+    //   userId: req.user.userId,
+    //   isProfileCompleted: true,
+    //   isActive:
+    //     !userRecord.expires_at || userRecord.expires_at < now ? false : true,
+    // };
 
-    const token = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken(payload);
+    // const token = generateAccessToken(payload);
+    // const refreshToken = generateRefreshToken(payload);
 
     // await prisma.refreshToken.create({
     //   data: {
@@ -67,31 +68,36 @@ export const saveProfile = async (req: Request, res: Response) => {
     //   },
     // });
 
-    await prisma.refreshToken.upsert({
-      where: { user_id: payload.userId },
-      update: {
-        token: refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-      create: {
-        token: refreshToken,
-        user_id: payload.userId,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
+    // await prisma.refreshToken.upsert({
+    //   where: { user_id: payload.userId },
+    //   update: {
+    //     token: refreshToken,
+    //     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    //   },
+    //   create: {
+    //     token: refreshToken,
+    //     user_id: payload.userId,
+    //     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    //   },
+    // });
+
+    // res.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "strict",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    //   path: "/",
+    //   // domain: ".kovaikongumatrimony.com",
+    //   domain: getCookieDomain(),
+    //   // domain: "192.168.29.126",
+    // });
+    await setUserClaims(userRecord.id, {
+      userId: userRecord.id,
+      isProfileCompleted: true,
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
-      // domain: ".kovaikongumatrimony.com",
-      domain: getCookieDomain(),
-      // domain: "192.168.29.126",
-    });
-
-    res.status(200).json({ token, refreshToken });
+    res.status(200).json({ message: "Created" });
+    // res.status(200).json({ token, refreshToken });
 
     /////
     /* const token = generateAccessToken({

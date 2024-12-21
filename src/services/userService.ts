@@ -2,6 +2,8 @@ import { Prisma, User } from "@prisma/client";
 import prisma from "../utils/prisma";
 import bcrypt from "bcryptjs";
 import { AppError } from "../utils/AppError";
+import { getAuth } from "firebase-admin/auth";
+import { CustomClaims } from "../types";
 
 export const getUserGenderSerivce = async (id: number) => {
   const userGender = await prisma.profile.findFirst({
@@ -25,7 +27,7 @@ export const getUserWithMobileNumberService = async (mobileNumber: number) => {
   return user;
 };
 
-export const getUserRecord = async (userId: number) => {
+export const getUserRecord = async (userId: string) => {
   const user = await prisma.user.findFirst({
     where: {
       id: userId,
@@ -36,7 +38,7 @@ export const getUserRecord = async (userId: number) => {
 };
 
 export const updateUserPasswordservice = async (
-  userId: number,
+  userId: string,
   password: string
 ) => {
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -54,7 +56,7 @@ export const updateUserPasswordservice = async (
 };
 
 export async function checkSubscription(
-  userId: number
+  userId: string
 ): Promise<{ isSubscribed: boolean; message: string }> {
   const userRecord = await getUserRecord(userId);
 
@@ -77,7 +79,7 @@ export async function checkSubscription(
   return { isSubscribed: true, message: "Subscription is active" };
 }
 
-export async function enableSixMonthsSubscription(userId: number) {
+export async function enableSixMonthsSubscription(userId: string) {
   const date = calculateDateSixMonthsFromNow();
 
   const response = await prisma.user.update({
@@ -108,7 +110,7 @@ function calculateDateSixMonthsFromNow(): Date {
   return futureDate;
 }
 
-export const deactivateAccountService = async (userId: number) => {
+export const deactivateAccountService = async (userId: string) => {
   const response: User = await prisma.user.update({
     where: { id: userId },
     data: {
@@ -118,7 +120,7 @@ export const deactivateAccountService = async (userId: number) => {
   return response;
 };
 
-export const isUserDeletedVerifyByUserId = async (userId: number) => {
+export const isUserDeletedVerifyByUserId = async (userId: string) => {
   try {
     const response = await prisma.user.findFirst({
       where: { id: userId },
@@ -259,3 +261,7 @@ export const isUserDeletedVerifyByProfileId = async (profileId: number) => {
   }
 };
  */
+
+export const setUserClaims = async (uid: string, claims: CustomClaims) => {
+  await getAuth().setCustomUserClaims(uid, claims);
+};

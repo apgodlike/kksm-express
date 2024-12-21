@@ -23,12 +23,12 @@ model ChangePasswordVerification {
   expires_at DateTime
   is_verified Boolean @default(false)
   otp_generated_count Int @default(1)
-  user_id     Int     @unique
+  user_id     String     @unique
   user        User   @relation(fields: [user_id], references: [id])
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id// @default(autoincrement())
   email     String?   @unique
   password  String?
   mobile_number BigInt
@@ -49,7 +49,7 @@ model User {
 model RefreshToken {
   id        Int   @id @default(autoincrement())
   token     String   @unique
-  user_id    Int @unique
+  user_id    String @unique
   expiresAt DateTime
   user              User     @relation(fields: [user_id], references: [id])
 
@@ -58,7 +58,7 @@ model RefreshToken {
 
 model Payment {
   id                Int      @id @default(autoincrement())
-  user_id           Int
+  user_id           String
   amount            Decimal  @db.Decimal(10, 2)
   status            PaymentStatus
   payment_method    PaymentMethod
@@ -127,7 +127,7 @@ contact_number String?
 notification Notification[]  @relation("profile_id")
 notification_sent Notification[]  @relation("sent_profile_id")
 created_at DateTime @default(now())
-user_id     Int     @unique
+user_id     String     @unique
 user        User   @relation(fields: [user_id], references: [id])
 profile_views ProfileViews[]
 contact_requested_by                Contact[]  @relation("contact_requested_by")
@@ -187,7 +187,7 @@ id          Int     @id @default(autoincrement())
 viewed_at   DateTime @default(now())
 profile_id  Int
 profile     Profile @relation(fields: [profile_id],references: [id])
-user_id     Int
+user_id     String
 user        User    @relation(fields: [user_id], references: [id])
 }
 

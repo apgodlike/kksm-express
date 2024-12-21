@@ -24,7 +24,7 @@ const client = new S3Client({
 
 export const saveProfileByUserId = async (
   payload: Profile,
-  user_id: number
+  user_id: string
 ): Promise<Profile | null> => {
   //   const {
   //     profile_for,
@@ -105,7 +105,7 @@ export const getProfileById = async (
 };
 
 export const getProfileByUserId = async (
-  id: number
+  id: string
 ): Promise<Profile | null> => {
   const response = await prisma.profile.findUnique({
     where: { user_id: id },

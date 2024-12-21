@@ -4,7 +4,7 @@ export const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const verifyIfMaxLimitReached = async (userId: number) => {
+export const verifyIfMaxLimitReached = async (userId: string) => {
   const mobileNumberResponse =
     await prisma.changePasswordVerification.findFirst({
       where: { user: { id: userId } },
@@ -14,7 +14,7 @@ export const verifyIfMaxLimitReached = async (userId: number) => {
 };
 
 export const verifyForgetPasswordOtpService = async (
-  userId: number,
+  userId: string,
   otp: string
 ) => {
   const verifyOtp = await prisma.changePasswordVerification.findFirst({

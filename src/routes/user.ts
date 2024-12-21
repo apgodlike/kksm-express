@@ -2,18 +2,18 @@ import { Router } from "express";
 import { validateRequest } from "../middlewares/validateRequest";
 import { registerSchema } from "../schemas/registerSchema";
 import {
-  changePasswordController,
+  // changePasswordController,
   deactivateAccountController,
   // deleteAccountController,
-  forgetPasswordController,
+  // forgetPasswordController,
   getCheckSubscriptionController,
   getLogoutUserController,
   // loginUser,
   postSubscriptionController,
-  refreshAccessToken,
+  // refreshAccessToken,
   registerUser,
   validateAsLoggedInOtpController,
-  validateOtpController,
+  // validateOtpController,
 } from "../controllers/authController";
 import { loginSchema } from "../schemas/loginSchema";
 // import { otpVerificationService } from "../services/emailService";
@@ -35,7 +35,7 @@ router.post(
 );
 
 // router.post("/login", validateRequest(loginSchema), loginUser);
-router.get("/refresh-token", refreshAccessToken);
+// router.get("/refresh-token", refreshAccessToken);
 router.get("/logout", authenticateToken, getLogoutUserController);
 
 // router.post(
@@ -52,25 +52,25 @@ router.get(
 
 router.post("/subscription", authenticateToken, postSubscriptionController);
 
-router.post(
-  "/forget-password-request-otp",
-  validateRequest(mobileOtpSchema),
-  forgetPasswordController
-);
+// router.post(
+//   "/forget-password-request-otp",
+//   validateRequest(mobileOtpSchema),
+//   forgetPasswordController
+// );
 
-router.post(
-  "/forget-password-validate-otp",
-  validateRequest(validateOtpSchema),
-  validateOtpController
-);
+// router.post(
+//   "/forget-password-validate-otp",
+//   validateRequest(validateOtpSchema),
+//   validateOtpController
+// );
 
-router.post(
-  "/change-password-request-otp",
-  authenticateToken,
-  authenticateCompletedProfile,
-  validateRequest(mobileOtpSchema),
-  changePasswordController
-);
+// router.post(
+//   "/change-password-request-otp",
+//   authenticateToken,
+//   authenticateCompletedProfile,
+//   validateRequest(mobileOtpSchema),
+//   changePasswordController
+// );
 
 router.post(
   "/change-password-validate-otp",

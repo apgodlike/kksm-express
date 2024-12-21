@@ -37,3 +37,9 @@ export interface item {
   employment_type: EmploymentType | null;
   education: string | null;
 }
+
+export interface CustomClaims {
+  userId: string;
+  isProfileCompleted: boolean;
+  isActive?: boolean;
+}

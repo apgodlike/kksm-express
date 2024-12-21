@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import { auth } from "firebase-admin";
 import * as admin from "firebase-admin";
 import dotenv from "dotenv";
+import path from "path";
+import { cert } from "firebase-admin/app";
 
 dotenv.config();
 
@@ -11,10 +13,14 @@ dotenv.config();
 // if (!JWT_SECRET) {
 //   throw new Error("JWT_SECRET is not defined in the environment variables");
 // }
-
+const serviceAccount = require(path.join(
+  __dirname,
+  "../../kksm05-firebase-adminsdk-g6ipa-35e3ea6e00.json"
+));
 // Initialize Firebase Admin
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
+  credential: cert(serviceAccount as admin.ServiceAccount),
+  //admin.credential.applicationDefault(),
   // Or use service account:
   // credential: admin.credential.cert(require('./path-to-service-account.json'))
 });
@@ -42,6 +48,7 @@ export const authenticateToken = async (
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1];
 
+  console.log("token...", token);
   if (!token) {
     return res.sendStatus(401);
   }
@@ -54,9 +61,9 @@ export const authenticateToken = async (
 
     const user = await admin.auth().verifyIdToken(token);
 
+    user.userId = user.uid;
     console.log("user");
     console.log(user);
-    user.userId = user.uid;
     (req as any).user = user;
     next();
     // });
