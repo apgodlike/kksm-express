@@ -159,7 +159,7 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
     const userProfileId = req.user.userId;
     // @ts-ignore
     // const id = req.params.page;
-    const userProfile = await getProfileByUserId(Number(userProfileId));
+    const userProfile = await getProfileByUserId(userProfileId);
     if (!userProfile) {
       return res.status(404).json({ error: "User profile not found" });
     }
@@ -523,7 +523,7 @@ export const getNotificationTypeCountsController = async (
   // const requestedId = req.query.requestedId;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(userProfileId);
   if (!userProfile) {
     return res.sendStatus(404);
   }
