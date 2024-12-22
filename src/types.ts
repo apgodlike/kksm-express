@@ -40,6 +40,7 @@ export interface item {
 
 export interface CustomClaims {
   userId: string;
+  isRegistered: boolean;
   isProfileCompleted: boolean;
   isActive?: boolean;
 }

@@ -12,6 +12,7 @@ import {
   enableSixMonthsSubscription,
   getUserRecord,
   getUserWithMobileNumberService,
+  setUserClaims,
   updateUserPasswordservice,
 } from "../services/userService";
 import {
@@ -30,10 +31,12 @@ const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
 export const registerUser = async (req: Request, res: Response) => {
   // @ts-ignore
   const userId = req.user.userId;
+  // @ts-ignore
+  const mobile_number = req.user.phone_number;
   const {
     // email,
     // password,
-    mobile_number,
+    // mobile_number,
     profile_for,
     name,
     date_of_birth,
@@ -114,6 +117,11 @@ export const registerUser = async (req: Request, res: Response) => {
     //   isProfileCompleted: newUser.is_profile_complete,
     //   isActive: !newUser.expires_at || newUser.expires_at < now ? false : true,
     // });
+    await setUserClaims(newUser.id, {
+      userId: newUser.id,
+      isRegistered: true,
+      isProfileCompleted: false,
+    });
 
     return res.status(201).json({ message: "Created" });
   } catch (error) {

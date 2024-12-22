@@ -93,6 +93,7 @@ export const saveProfile = async (req: Request, res: Response) => {
     // });
     await setUserClaims(userRecord.id, {
       userId: userRecord.id,
+      isRegistered: true,
       isProfileCompleted: true,
     });
 
@@ -565,4 +566,14 @@ export const getViewNotificationController = async (
   }
 
   res.json(response);
+};
+
+export const getValidUser = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const response = getUserRecord(req.user.userId);
+
+  if (!response) {
+    return res.sendStatus(404);
+  }
+  return res.status(200).json({ is_valid: true });
 };

@@ -24,6 +24,7 @@ import {
   authenticateToken,
 } from "../middlewares/authMiddleware";
 import { deactivateAccountSchema } from "../schemas/deactivateAccountSchema";
+import { getValidUser } from "../controllers/profileController";
 
 const router = Router();
 
@@ -33,6 +34,8 @@ router.post(
   validateRequest(registerSchema),
   registerUser
 );
+
+router.get("/user-valid", authenticateToken, getValidUser);
 
 // router.post("/login", validateRequest(loginSchema), loginUser);
 // router.get("/refresh-token", refreshAccessToken);
