@@ -221,7 +221,7 @@ export const postSendRequestController = async (
     const userProfileId = req.user.userId;
 
     // @ts-ignore
-    const userProfile = await getProfileByUserId(Number(userProfileId));
+    const userProfile = await getProfileByUserId(userProfileId);
 
     const requestedTo = req.body.requested_to;
 
@@ -253,7 +253,7 @@ export const postShortlistController = async (req: Request, res: Response) => {
     const userProfileId = req.user.userId;
 
     // @ts-ignore
-    const userProfile = await getProfileByUserId(Number(userProfileId));
+    const userProfile = await getProfileByUserId(userProfileId);
 
     const requestedTo = req.body.requested_to;
 
@@ -290,7 +290,7 @@ export const deleteShortlistController = async (
     const userProfileId = req.user.userId;
 
     // @ts-ignore
-    const userProfile = await getProfileByUserId(Number(userProfileId));
+    const userProfile = await getProfileByUserId(userProfileId);
 
     const requestedTo = req.body.requested_to;
 
@@ -320,7 +320,7 @@ export const postPhoneNumberController = async (
   const userProfileId = req.user.userId;
 
   // @ts-ignore
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(userProfileId);
 
   const requestedTo = req.body.requested_to;
 
@@ -460,7 +460,7 @@ export const getContactStatusController = async (
   const requestedId = req.query.requestedId;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(userProfileId);
   if (!userProfile) {
     return res.sendStatus(404);
   }
