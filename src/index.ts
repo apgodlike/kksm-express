@@ -14,6 +14,8 @@ const port = process.env.PORT || 3010;
 dotenv.config();
 
 const app = express();
+app.use(cookieParser());
+app.use(express.json());
 app.use(
   cors({
     origin:
@@ -29,26 +31,12 @@ app.use(
         "https://api.kovaikongumatrimony.com",
         "https://www.kovaikongumatrimony.com",
       ],
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     exposedHeaders: ["Set-Cookie"],
   })
 );
-
-app.options("*", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-  );
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.sendStatus(204); // No Content
-});
-
-app.use(cookieParser());
-app.use(express.json());
 
 /* [
   "http://localhost:3000",
