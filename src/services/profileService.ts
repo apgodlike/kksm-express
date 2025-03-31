@@ -107,6 +107,7 @@ export const getProfileById = async (
 export const getProfileByUserId = async (
   id: string
 ): Promise<Profile | null> => {
+  console.log("getProfileByUserId", id);
   const response = await prisma.profile.findUnique({
     where: { user_id: id },
   });

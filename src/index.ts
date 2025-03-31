@@ -14,8 +14,6 @@ const port = process.env.PORT || 3010;
 dotenv.config();
 
 const app = express();
-app.use(cookieParser());
-app.use(express.json());
 app.use(
   cors({
     origin:
@@ -37,6 +35,8 @@ app.use(
     exposedHeaders: ["Set-Cookie"],
   })
 );
+app.use(cookieParser());
+app.use(express.json());
 
 /* [
   "http://localhost:3000",

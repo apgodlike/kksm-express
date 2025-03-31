@@ -12,7 +12,8 @@
     "dev": "nodemon src/index.ts",
     "astart": "node dist/index.js",
     "build": "prisma generate && tsc",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "debug": "DEBUG=express:* nodemon src/index.ts"
   },
   "keywords": [],
   "author": "",
