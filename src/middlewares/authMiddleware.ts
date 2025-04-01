@@ -18,7 +18,7 @@ let serviceAccount;
 
 if (process.env.NODE_ENV === "production") {
   serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_CREDENTIALS as string);
-  serviceAccount.replace("\\n", "\n");
+  serviceAccount = serviceAccount.replace("\\n", "\n");
 } else {
   serviceAccount = require(path.join(
     __dirname,
