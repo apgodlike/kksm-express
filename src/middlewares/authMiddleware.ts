@@ -18,12 +18,14 @@ let serviceAccount;
 
 if (process.env.NODE_ENV === "production") {
   serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_CREDENTIALS as string);
+  serviceAccount.replace("\\n", "\n");
 } else {
   serviceAccount = require(path.join(
     __dirname,
     "../../kksm05-firebase-adminsdk-g6ipa-35e3ea6e00.json"
   ));
 }
+
 // Initialize Firebase Admin
 admin.initializeApp({
   credential: cert(serviceAccount as admin.ServiceAccount),
