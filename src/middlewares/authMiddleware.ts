@@ -17,6 +17,7 @@ dotenv.config();
 let serviceAccount;
 
 if (process.env.NODE_ENV === "production") {
+  console.log("Raw ENV:", process.env.FIREBASE_ADMIN_CREDENTIALS);
   serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_CREDENTIALS as string);
   serviceAccount = serviceAccount.replace(/\\n/g, "\n");
 } else {
