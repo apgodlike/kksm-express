@@ -13,10 +13,17 @@ dotenv.config();
 // if (!JWT_SECRET) {
 //   throw new Error("JWT_SECRET is not defined in the environment variables");
 // }
-const serviceAccount = require(path.join(
-  __dirname,
-  "../../kksm05-firebase-adminsdk-g6ipa-35e3ea6e00.json"
-));
+
+let serviceAccount;
+
+if (process.env.NODE_ENV === "production") {
+  serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_CREDENTIALS as string);
+} else {
+  serviceAccount = require(path.join(
+    __dirname,
+    "../../kksm05-firebase-adminsdk-g6ipa-35e3ea6e00.json"
+  ));
+}
 // Initialize Firebase Admin
 admin.initializeApp({
   credential: cert(serviceAccount as admin.ServiceAccount),
