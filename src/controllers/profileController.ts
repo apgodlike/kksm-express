@@ -64,7 +64,6 @@ export const saveProfile = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   // enable later
   const id = parseInt(req.params.id, 10);
-  // const id = 1;
   // @ts-ignore
   const userId = req.user.userId;
   const userProfile = await getProfileByUserId(userId);
