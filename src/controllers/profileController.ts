@@ -147,7 +147,7 @@ export const getRequestSentController = async (req: Request, res: Response) => {
   const status = req.query.status;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   // @ts-ignore
   const response = await getRequestSentService(userProfile.id, status);
@@ -289,7 +289,7 @@ export const getRequestReceivedController = async (
   const status = req.query.status;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   // @ts-ignore
   const response = await getRequestReceivedService(userProfile.id, status);
@@ -308,7 +308,7 @@ export const postAcceptRequestController = async (
   const userProfileId = req.user.userId;
 
   // @ts-ignore
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   const requestedBy = req.body.requested_by;
 
@@ -330,7 +330,7 @@ export const postDeclineRequestController = async (
   const userProfileId = req.user.userId;
 
   // @ts-ignore
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   const requestedBy = req.body.requested_by;
 
@@ -349,7 +349,7 @@ export const getShortlistedController = async (req: Request, res: Response) => {
   const status = req.query.status;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   // @ts-ignore
   const response = await getShortlistedService(userProfile.id);
@@ -370,7 +370,7 @@ export const getPresignedUrlController = async (
   const imageNumber = req.query.image;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   if (!userProfile) {
     return res.sendStatus(404);
@@ -430,7 +430,7 @@ export const deleteImageController = async (req: Request, res: Response) => {
   const imageNumber = req.query.image;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
 
   if (!userProfile) {
     return res.sendStatus(404);
@@ -497,7 +497,7 @@ export const getViewNotificationController = async (
   // const requestedId = req.query.requestedId;
   // @ts-ignore
   // const id = req.params.page;
-  const userProfile = await getProfileByUserId(Number(userProfileId));
+  const userProfile = await getProfileByUserId(String(userProfileId));
   if (!userProfile) {
     return res.sendStatus(404);
   }
