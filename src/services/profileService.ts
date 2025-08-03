@@ -137,6 +137,8 @@ export const getSuggestedProfilesService = async (
       kulam: true,
       education: true,
       employment_type: true,
+      employed_in: true,
+      location: true,
       image_1: true,
       image_2: true,
       image_3: true,
