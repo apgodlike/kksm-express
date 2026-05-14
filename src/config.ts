@@ -1,8 +1,8 @@
-export const JWT_SECRET = "AP";
+export const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "";
 export const WORKER_JWT_SECRET = JWT_SECRET + "worker";
 export const TOTAL_DECIMALS = 1000_000;
-export const JWT_ACCESS_SECRET = "AP";
-export const JWT_REFRESH_SECRET = "REF";
+export const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "";
+export const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "";
 
 export const getCookieDomain = () => {
   switch (process.env.NODE_ENV) {

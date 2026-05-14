@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const validateOtpSchema = z.object({
-  otp: z.string(),
+  otp: z.string().min(4).max(10),
   mobile_number: z.string().refine((value) => /^\d{10}$/.test(value), {
     message: "Invalid mobile number format. Must be 10 digits.",
   }),

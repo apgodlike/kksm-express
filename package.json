@@ -7,11 +7,12 @@
     "node": "18.x"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "start": "nodemon src/index.ts",
     "dev": "nodemon src/index.ts",
     "astart": "node dist/index.js",
     "build": "prisma generate && tsc",
+    "lint": "eslint src --ext .ts",
     "postinstall": "prisma generate",
     "debug": "DEBUG=express:* nodemon src/index.ts"
   },
@@ -47,7 +48,11 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.9",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
     "nodemon": "^3.1.4",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "vitest": "^4.1.6"
   }
 }

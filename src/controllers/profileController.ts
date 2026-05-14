@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
   deleteAwsFileService,
   deleteShortlistService,
@@ -27,27 +27,26 @@ import { getUserRecord, setUserClaims } from "../services/userService";
 import { getCookieDomain } from "../config";
 import prisma from "../utils/prisma";
 import { messaging } from "firebase-admin";
+import { AppError } from "../utils/AppError";
 
-export const saveProfile = async (req: Request, res: Response) => {
+export const saveProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // @ts-ignore
     const userRecord = await getUserRecord(req.user.userId);
 
     if (!userRecord) {
-      return res.status(400).json({ message: "Something went wrong" });
+      return next(new AppError("Something went wrong", 400));
     }
 
     const createdProfile = await saveProfileByUserId(req.body, userRecord.id);
 
     if (!createdProfile) {
-      res.status(400).json({ message: "Something went wrong" });
+      return next(new AppError("Something went wrong", 400));
     }
 
     if (userRecord?.is_profile_complete) {
       return res.status(201).json({ message: "Profile Updated Successfully" });
     }
-    const now = new Date();
-    //
 
     await setUserClaims(userRecord.id, {
       userId: userRecord.id,
@@ -56,58 +55,51 @@ export const saveProfile = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({ message: "Created" });
-  } catch (error) {
-    console.error("Error in saveProfile:", error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const getProfile = async (req: Request, res: Response) => {
-  // enable later
-  const id = parseInt(req.params.id, 10);
-  // @ts-ignore
-  const userId = req.user.userId;
-  const userProfile = await getProfileByUserId(userId);
-  if (!userProfile) {
-    return res.status(404).json({ error: "User profile not found" });
-  }
-
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const id = parseInt(req.params.id, 10);
+    // @ts-ignore
+    const userId = req.user.userId;
+    const userProfile = await getProfileByUserId(userId);
+    if (!userProfile) {
+      return res.status(404).json({ error: "User profile not found" });
+    }
+
     const profile = await getProfileById(id, userProfile.id);
     if (profile) {
       res.status(200).json(profile);
     } else {
       res.status(404).json({ error: "User not found" });
     }
-  } catch (error) {
-    console.error("Error in getProfile:", error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const getUserProfile = async (req: Request, res: Response) => {
+export const getUserProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // @ts-ignore
     const id = req.user.userId;
     const profile = await getProfileByUserId(id);
-    console.log("profileprofile", profile);
     if (profile) {
       return res.status(200).json(profile);
     } else {
       return res.status(404).json({ error: "User not found" });
     }
-  } catch (error) {
-    console.error("Error in getUserProfile:", error);
-    return res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const getSuggestedProfiles = async (req: Request, res: Response) => {
+export const getSuggestedProfiles = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // @ts-ignore
     const userProfileId = req.user.userId;
-    // @ts-ignore
-    // const id = req.params.page;
     const userProfile = await getProfileByUserId(userProfileId);
     if (!userProfile) {
       return res.status(404).json({ error: "User profile not found" });
@@ -126,125 +118,97 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
     } else {
       res.status(404).json({ error: "Profiles not found" });
     }
-  } catch (error) {
-    console.error("Error in getSuggestedProfiles:", error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
 export const postRegularSearchController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const response = await regularSearchProfileService(req.body);
-  } catch (error) {
-    console.error("Error in postRegularSearchController:", error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const getRequestSentController = async (req: Request, res: Response) => {
-  console.log("getRequestSentController");
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+export const getRequestSentController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const status = req.query.status;
+    const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  const status = req.query.status;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    // @ts-ignore
+    const response = await getRequestSentService(userProfile.id, status);
+    if (!response) {
+      return res.sendStatus(404);
+    }
 
-  // @ts-ignore
-  const response = await getRequestSentService(userProfile.id, status);
-  if (!response) {
-    return res.sendStatus(404);
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  res.json(response);
 };
 
 export const postSendRequestController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     // @ts-ignore
     const userProfileId = req.user.userId;
-
-    // @ts-ignore
     const userProfile = await getProfileByUserId(userProfileId);
-
     const requestedTo = req.body.requested_to;
-
     // @ts-ignore
     const requestedBy = userProfile.id;
 
     const response = await postSendRequestService(requestedBy, requestedTo);
     res.status(201).json(response);
-  } catch (error) {
-    console.error("Error in Request creation:", error);
-
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Handle known Prisma errors
-      if (error.code === "P2002") {
-        return res.status(409).json({ error: "Already sent Request" });
-      }
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return next(new AppError("Already sent Request", 409));
     }
-
-    // For other types of errors, send a generic error message
-    res.status(500).json({
-      error: "An error occurred while sending request for the profile.",
-    });
+    next(err);
   }
 };
 
-export const postShortlistController = async (req: Request, res: Response) => {
+export const postShortlistController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // @ts-ignore
     const userProfileId = req.user.userId;
-
-    // @ts-ignore
     const userProfile = await getProfileByUserId(userProfileId);
-
     const requestedTo = req.body.requested_to;
-
     // @ts-ignore
     const requestedBy = userProfile.id;
 
     const response = await postShortlistService(requestedBy, requestedTo);
     res.status(201).json(response);
-  } catch (error) {
-    console.error("Error in shortlist creation:", error);
-
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Handle known Prisma errors
-      if (error.code === "P2002") {
-        return res
-          .status(409)
-          .json({ error: "This profile is already shortlisted." });
-      }
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return next(new AppError("This profile is already shortlisted.", 409));
     }
-
-    // For other types of errors, send a generic error message
-    res
-      .status(500)
-      .json({ error: "An error occurred while shortlisting the profile." });
+    next(err);
   }
 };
 
 export const deleteShortlistController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     // @ts-ignore
     const userProfileId = req.user.userId;
-
-    // @ts-ignore
     const userProfile = await getProfileByUserId(userProfileId);
-
     const requestedTo = req.body.requested_to;
-
     // @ts-ignore
     const requestedBy = userProfile.id;
 
@@ -253,277 +217,298 @@ export const deleteShortlistController = async (
     if (response.count == 1) {
       return res.status(200).json({ message: "Successfully Deleted" });
     }
-
     if (response.count == 0) {
       return res.sendStatus(404);
     }
-    return res.status(500);
-  } catch (error) {
-    return res.status(500);
+    res.sendStatus(500);
+  } catch (err) {
+    next(err);
   }
 };
 
 export const postPhoneNumberController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const userProfile = await getProfileByUserId(userProfileId);
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  // @ts-ignore
-  const userProfile = await getProfileByUserId(userProfileId);
+    const requestedTo = req.body.requested_to;
+    // @ts-ignore
+    const requestedBy = userProfile.id;
 
-  const requestedTo = req.body.requested_to;
-
-  // @ts-ignore
-  const requestedBy = userProfile.id;
-
-  const response = await postPhoneNumberService(requestedBy, requestedTo);
-
-  res.json(response);
+    const response = await postPhoneNumberService(requestedBy, requestedTo);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getRequestReceivedController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  console.log("getRequestReceivedController");
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const status = req.query.status;
+    const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  const status = req.query.status;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    // @ts-ignore
+    const response = await getRequestReceivedService(userProfile.id, status);
+    if (!response) {
+      return res.sendStatus(404);
+    }
 
-  // @ts-ignore
-  const response = await getRequestReceivedService(userProfile.id, status);
-  if (!response) {
-    return res.sendStatus(404);
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  res.json(response);
 };
 
 export const postAcceptRequestController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  // @ts-ignore
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    const requestedBy = req.body.requested_by;
+    // @ts-ignore
+    const acceptedBy = userProfile.id;
 
-  const requestedBy = req.body.requested_by;
-
-  // @ts-ignore
-  const acceptedBy = userProfile.id;
-
-  console.log("object", acceptedBy, requestedBy);
-
-  const response = await postAcceptRequestService(requestedBy, acceptedBy);
-
-  res.json(response);
+    const response = await postAcceptRequestService(requestedBy, acceptedBy);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const postDeclineRequestController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  // @ts-ignore
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    const requestedBy = req.body.requested_by;
+    // @ts-ignore
+    const declinedBy = userProfile.id;
 
-  const requestedBy = req.body.requested_by;
-
-  // @ts-ignore
-  const declinedBy = userProfile.id;
-
-  const response = await postDeclineRequestService(requestedBy, declinedBy);
-
-  res.json(response);
+    const response = await postDeclineRequestService(requestedBy, declinedBy);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
 };
 
-export const getShortlistedController = async (req: Request, res: Response) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+export const getShortlistedController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const status = req.query.status;
+    const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  const status = req.query.status;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    // @ts-ignore
+    const response = await getShortlistedService(userProfile.id);
+    if (!response) {
+      return res.sendStatus(404);
+    }
 
-  // @ts-ignore
-  const response = await getShortlistedService(userProfile.id);
-  if (!response) {
-    return res.sendStatus(404);
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  res.json(response);
 };
 
 export const getPresignedUrlController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const imageNumber = req.query.image;
+    const userProfile = await getProfileByUserId(String(userProfileId));
 
-  const imageNumber = req.query.image;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  if (!userProfile) {
-    return res.sendStatus(404);
+    const key = `kksm/${userProfile.id}/${Math.random()}/image.jpg`;
+
+    const response = await getPresignedUrlService(key);
+    if (!response) {
+      return res.sendStatus(404);
+    }
+
+    const imageUpdate = await updateOneProfileField(
+      userProfile.id,
+      "image_" + imageNumber,
+      key
+    );
+    if (!imageUpdate) {
+      return res.sendStatus(404);
+    }
+
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  const key = `kksm/${userProfile.id}/${Math.random()}/image.jpg`;
-
-  const response = await getPresignedUrlService(key);
-  if (!response) {
-    return res.sendStatus(404);
-  }
-
-  const imageUpdate = await updateOneProfileField(
-    userProfile.id,
-    "image_" + imageNumber,
-    key
-  );
-  console.log("imageUpdate ", imageUpdate);
-  if (!imageUpdate) {
-    return res.sendStatus(404);
-  }
-
-  res.json(response);
 };
 
 export const getContactStatusController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const requestedId = req.query.requestedId;
+    const userProfile = await getProfileByUserId(userProfileId);
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  const requestedId = req.query.requestedId;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(userProfileId);
-  if (!userProfile) {
-    return res.sendStatus(404);
+    // @ts-ignore
+    const response = await getContactStatusService(
+      Number(userProfile.id),
+      Number(requestedId)
+    );
+    if (!response) {
+      return res.sendStatus(404);
+    }
+
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  // @ts-ignore
-  const response = await getContactStatusService(
-    Number(userProfile.id),
-    Number(requestedId)
-  );
-  if (!response) {
-    return res.sendStatus(404);
-  }
-
-  res.json(response);
 };
 
-export const deleteImageController = async (req: Request, res: Response) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+export const deleteImageController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const imageNumber = req.query.image;
+    const userProfile = await getProfileByUserId(String(userProfileId));
 
-  const imageNumber = req.query.image;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  if (!userProfile) {
-    return res.sendStatus(404);
+    const imageKey = "image_" + imageNumber;
+    // @ts-ignore
+    const imagePath = userProfile[imageKey];
+
+    const response = await deleteAwsFileService(imagePath);
+    if (!response) {
+      return res.sendStatus(404);
+    }
+
+    const imageUpdate = await updateOneProfileField(
+      userProfile.id,
+      "image_" + imageNumber,
+      null
+    );
+    if (!imageUpdate) {
+      return res.sendStatus(404);
+    }
+
+    res.json({ message: "Image Deleted" });
+  } catch (err) {
+    next(err);
   }
-
-  const imageKey = "image_" + imageNumber;
-
-  // @ts-ignore
-  const imagePath = userProfile[imageKey];
-
-  const response = await deleteAwsFileService(imagePath);
-
-  if (!response) {
-    return res.sendStatus(404);
-  }
-
-  const imageUpdate = await updateOneProfileField(
-    userProfile.id,
-    "image_" + imageNumber,
-    null
-  );
-  if (!imageUpdate) {
-    return res.sendStatus(404);
-  }
-
-  res.json({ message: "Image Deleted" });
 };
 
 export const getNotificationTypeCountsController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const userProfile = await getProfileByUserId(userProfileId);
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  // const requestedId = req.query.requestedId;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(userProfileId);
-  if (!userProfile) {
-    return res.sendStatus(404);
+    // @ts-ignore
+    const response = await getNotificationTypeCountsService(Number(userProfile.id));
+    if (!response) {
+      return res.sendStatus(404);
+    }
+
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  // @ts-ignore
-  const response = await getNotificationTypeCountsService(
-    Number(userProfile.id)
-  );
-  if (!response) {
-    return res.sendStatus(404);
-  }
-
-  res.json(response);
 };
 
 export const getViewNotificationController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  // @ts-ignore
-  const userProfileId = req.user.userId;
+  try {
+    // @ts-ignore
+    const userProfileId = req.user.userId;
+    const pageNumber = req.params.page;
+    const userProfile = await getProfileByUserId(String(userProfileId));
+    if (!userProfile) {
+      return res.sendStatus(404);
+    }
 
-  const pageNumber = req.params.page;
+    const response = await getViewNotificationService(
+      Number(pageNumber),
+      userProfile.id
+    );
+    if (!response) {
+      return res.sendStatus(404);
+    }
 
-  // const requestedId = req.query.requestedId;
-  // @ts-ignore
-  // const id = req.params.page;
-  const userProfile = await getProfileByUserId(String(userProfileId));
-  if (!userProfile) {
-    return res.sendStatus(404);
+    res.json(response);
+  } catch (err) {
+    next(err);
   }
-
-  const response = await getViewNotificationService(
-    Number(pageNumber),
-    userProfile.id
-  );
-  if (!response) {
-    return res.sendStatus(404);
-  }
-
-  res.json(response);
 };
 
-export const getValidUser = async (req: Request, res: Response) => {
-  // @ts-ignore
-  const response = getUserRecord(req.user.userId);
-
-  if (!response) {
-    return res.sendStatus(404);
+export const getValidUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // @ts-ignore
+    const response = await getUserRecord(req.user.userId);
+    if (!response) {
+      return res.sendStatus(404);
+    }
+    return res.status(200).json({ is_valid: true });
+  } catch (err) {
+    next(err);
   }
-  return res.status(200).json({ is_valid: true });
 };

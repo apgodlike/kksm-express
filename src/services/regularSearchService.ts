@@ -1,7 +1,6 @@
-import { PrismaClient, Gender, Prisma } from "@prisma/client";
+import { Gender, Prisma } from "@prisma/client";
 import { PaginatedResult, RegularSearchParams } from "../types";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma";
 
 export const regularSearchProfileService = async (
   params: RegularSearchParams
