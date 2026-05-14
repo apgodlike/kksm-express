@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import userRouter from "./routes/user";
-import searchRouter from "./routes/search";
 import profileRouter from "./routes/profile";
 // import emailRouter from "./routes/email";
 import { authenticateToken } from "./middlewares/authMiddleware";
@@ -59,19 +58,6 @@ app.use("/api/v1/profile", profileRouter);
 
 // GET Details - get particular profile full details for profile page
 
-// post search, post advanced search, get search results, get suggessions
-// /api/v1/search
-app.use("/api/v1/search", searchRouter);
-
-// POST Search - basic fields - filter and send
-
-// POST Advanced search - all fields
-
-// /api/v1/
-// GET - suggessions
-
-// GET - results
-
 // app.use("/api/v1/email", emailRouter);
 
 app.get(
@@ -82,10 +68,10 @@ app.get(
   }
 );
 
+app.use(errorHandler);
+
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
-
-app.use(errorHandler);
 
 export default app;

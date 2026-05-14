@@ -28,15 +28,13 @@ import { AppError } from "../utils/AppError";
 dotenv.config();
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = process.env;
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   // @ts-ignore
   const userId = req.user.userId;
-  // @ts-ignore
-  const mobile_number = req.user.phone_number;
   const {
     // email,
     // password,
-    // mobile_number,
+    mobile_number,
     profile_for,
     name,
     date_of_birth,
@@ -46,7 +44,6 @@ export const registerUser = async (req: Request, res: Response) => {
   } = req.body;
   try {
     const existingUser = await prisma.user.findFirst({ where: { id: userId } });
-    console.log("reg", existingUser);
 
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
@@ -124,13 +121,11 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     return res.status(201).json({ message: "Created" });
-  } catch (error) {
-    // @ts-ignore
-    if (error.code === "P2002") {
-      res.status(400).json({ error });
-    } else {
-      res.status(500).json({ error });
+  } catch (err) {
+    if ((err as any).code === "P2002") {
+      return next(new AppError("User already registered", 400));
     }
+    next(err);
   }
 };
 /* 
@@ -154,7 +149,6 @@ export const loginUser = async (req: Request, res: Response) => {
 
     // Check if the subscription has expired
     const now = new Date();
-    console.log("!user.expires_at || user.expires_at < now,", user.expires_at);
     let isActive;
     if (!user.expires_at || user.expires_at < now) {
       isActive = true;
@@ -261,16 +255,11 @@ export const loginUser = async (req: Request, res: Response) => {
 //   }
 // };
 
-export const getLogoutUserController = async (req: Request, res: Response) => {
+export const getLogoutUserController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // @ts-ignore
     const userId = req.user.userId;
-    console.log("Here");
-    console.log("userIduserId", userId);
-
     const refreshToken = req.cookies.refreshToken;
-
-    console.log("refreshToken", refreshToken);
 
     const response = await prisma.refreshToken.delete({
       where: {
@@ -287,9 +276,8 @@ export const getLogoutUserController = async (req: Request, res: Response) => {
       // Only include path if you specified it when setting the cookie
     });
     return res.status(200).json({ message: "Logged out successfully" });
-  } catch (error) {
-    console.log("error", error);
-    res.status(500).json({ error: error });
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -425,7 +413,8 @@ export const generateRefreshToken = (user: JwtPayload) => {
 
 export const validateAsLoggedInOtpController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const otp = req.body.otp;
@@ -465,15 +454,15 @@ export const validateAsLoggedInOtpController = async (
         .json({ error: "Something went wrong. Please try again" });
     }
     return res.status(200).json({ message: "Password Updated Successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+  } catch (err) {
+    next(err);
   }
 };
 
 export const getCheckSubscriptionController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     // @ts-ignore
@@ -485,15 +474,15 @@ export const getCheckSubscriptionController = async (
 
     const { isSubscribed, message } = await checkSubscription(userId);
     return res.status(200).json({ is_subscribed: isSubscribed, message });
-  } catch (error) {
-    console.error("Error checking subscription:", error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
 export const postSubscriptionController = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     // @ts-ignore
@@ -538,15 +527,15 @@ export const postSubscriptionController = async (
     // return res
     //   .status(200)
     //   .json({ is_subscribed: true, message: "Subscribed", token });
-  } catch (error) {
-    console.error("Error updating subscription:", error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    next(err);
   }
 };
 
 export const deactivateAccountController = async (
-  req: Request<{}, {}, PostDeactivateAccountDto>,
-  res: Response
+  req: Request<Record<string, string>, unknown, PostDeactivateAccountDto>,
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     // @ts-ignore
@@ -561,8 +550,8 @@ export const deactivateAccountController = async (
       return res.status(200).json({ is_deactivated: true });
     }
     return res.status(400).json({ error: "Account Not Deleted" });
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+  } catch (err) {
+    next(err);
   }
 };
 

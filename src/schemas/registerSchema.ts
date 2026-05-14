@@ -24,10 +24,10 @@ export const registerSchema = z.object({
     message: "Date of birth must be in YYYY-MM-DD format",
   }),
   gender: z.nativeEnum(Gender),
-  // mobile_number: z.string().refine((value) => /^\d{10}$/.test(value), {
-  //   message: "Invalid mobile number format. Must be 10 digits.",
-  // }),
-  kulam: z.string().min(1).max(100), // Adjust max as per your requirements
+  mobile_number: z.string().regex(/^\d{10}$/, {
+    message: "Mobile number must be exactly 10 digits",
+  }),
+  kulam: z.string().min(1).max(100),
   // otp: z.string(),
 });
 

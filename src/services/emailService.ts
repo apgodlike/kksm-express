@@ -98,7 +98,7 @@ export const otpVerificationService = async (req: Request, res: Response) => {
   }
 };
  */
-export const forgetPasswordService = async (userId: number) => {
+export const forgetPasswordService = async (userId: string) => {
   const otp = generateOtp();
 
   const otpVerification = await prisma.changePasswordVerification.upsert({

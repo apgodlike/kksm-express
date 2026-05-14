@@ -107,7 +107,6 @@ export const getProfileById = async (
 export const getProfileByUserId = async (
   id: string
 ): Promise<Profile | null> => {
-  console.log("getProfileByUserId", id);
   const response = await prisma.profile.findUnique({
     where: { user_id: id },
   });
@@ -138,6 +137,8 @@ export const getSuggestedProfilesService = async (
       kulam: true,
       education: true,
       employment_type: true,
+      employed_in: true,
+      location: true,
       image_1: true,
       image_2: true,
       image_3: true,
@@ -595,7 +596,6 @@ export const getRequestReceivedService = async (id: number, status: string) => {
 };
 
 export const getShortlistedService = async (id: number) => {
-  console.log("id", id);
   const response = await prisma.shortlist.findMany({
     where: {
       shortlisted_by: id,
@@ -698,7 +698,6 @@ export const getContactStatusService = async (
         shortlisted_profile: requestedTo,
       },
     });
-    console.log("contactStatus?.requested_by, ", contactStatus?.requested_by);
 
     const is_requested_to_my_profile = () => {
       if (
@@ -773,12 +772,10 @@ export const getNotificationTypeCountsService = async (
     };
 
     if (!latestRecord) {
-      console.log("No records found");
       return formattedCounts;
     }
 
     if (latestRecord.is_viewed) {
-      console.log("Latest record has x field as true");
       return formattedCounts;
     }
 
@@ -796,7 +793,6 @@ export const getNotificationTypeCountsService = async (
       formattedCounts.totalCount += item._count.notification_type;
     });
 
-    console.log("Notification Type Counts:", formattedCounts);
     return formattedCounts;
   } catch (error) {
     console.error("Error fetching notification type counts:", error);

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Gender } from "@prisma/client";
 import { regularSearchProfileService } from "../services/regularSearchService";
 import { RegularSearchParams, ProfilesResponse } from "../types";
@@ -7,7 +7,7 @@ import {
   getProfileByUserId,
 } from "../services/profileService";
 
-export const regularSearchController = async (req: Request, res: Response) => {
+export const regularSearchController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Extract and transform the data
     const { age_from, age_to, location, recent_profile, page_size, page } =
@@ -19,7 +19,7 @@ export const regularSearchController = async (req: Request, res: Response) => {
     const profile = await getProfileByUserId(req.user.userId);
 
     if (!profile) {
-      return res.send(404).json({ msg: "error" });
+      return res.status(404).json({ msg: "error" });
     }
 
     const oppositeGender = getOppositeGender(profile.gender);
@@ -52,12 +52,7 @@ export const regularSearchController = async (req: Request, res: Response) => {
 
     // Send the response
     res.json(response);
-  } catch (error) {
-    console.error("Error in regularSearchController:", error);
-    if (error instanceof Error) {
-      res.status(400).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: "An unexpected error occurred" });
-    }
+  } catch (err) {
+    next(err);
   }
 };

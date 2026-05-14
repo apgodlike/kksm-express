@@ -10,10 +10,7 @@ export function authMiddleware(
 ) {
   const authHeader = req.headers["authorization"] ?? "";
   try {
-    console.log("authMiddleware");
-
     const decoded = jwt.verify(authHeader, process.env.JWT_ACCESS_SECRET!);
-    console.log(decoded);
 
     // @ts-ignore
     if (decoded.userId) {
@@ -35,10 +32,7 @@ export function workerMiddleware(
 ) {
   const authHeader = req.headers["authorization"] ?? "";
   try {
-    console.log("workerMiddleware");
-
     const decoded = jwt.verify(authHeader, WORKER_JWT_SECRET);
-    console.log(decoded);
 
     // @ts-ignore
     if (decoded.userId) {

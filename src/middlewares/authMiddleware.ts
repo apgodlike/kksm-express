@@ -51,7 +51,7 @@ declare global {
 }
 
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   isProfileCompleted: boolean;
   isActive: boolean;
 }
@@ -64,7 +64,6 @@ export const authenticateToken = async (
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1];
 
-  console.log("token...", token);
   if (!token) {
     return res.sendStatus(401);
   }
@@ -78,8 +77,6 @@ export const authenticateToken = async (
     const user = await admin.auth().verifyIdToken(token);
 
     user.userId = user.uid;
-    console.log("user");
-    console.log(user);
     (req as any).user = user;
     next();
     // });
@@ -93,19 +90,11 @@ export const authenticateCompletedProfile = (
   res: Response,
   next: NextFunction
 ) => {
-  /*  // @ts-ignore
-  const isActive = req.user.isActive;
-
-  if (!isActive) {
-    return res.status(403).json({ error: "Profile Not Active" });
-  }
-
-  // @ts-ignore
-  const isCompleted = req.user.isProfileCompleted;
+  const isCompleted = req.user?.["isProfileCompleted"];
 
   if (!isCompleted) {
-    return res.status(403).json({ error: "Profile Not Compelted" });
+    return res.status(403).json({ error: "Profile not complete" });
   }
- */
+
   next();
 };
