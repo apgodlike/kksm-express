@@ -54,10 +54,6 @@ export const regularSearchController = async (req: Request, res: Response) => {
     res.json(response);
   } catch (error) {
     console.error("Error in regularSearchController:", error);
-    if (error instanceof Error) {
-      res.status(400).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: "An unexpected error occurred" });
-    }
+    res.status(500).json({ error: "Internal server error" });
   }
 };

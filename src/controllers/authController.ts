@@ -125,11 +125,11 @@ export const registerUser = async (req: Request, res: Response) => {
 
     return res.status(201).json({ message: "Created" });
   } catch (error) {
-    // @ts-ignore
-    if (error.code === "P2002") {
-      res.status(400).json({ error });
+    console.error("Error in registerUser:", error);
+    if ((error as any).code === "P2002") {
+      res.status(400).json({ error: "User already registered" });
     } else {
-      res.status(500).json({ error });
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 };
@@ -288,8 +288,8 @@ export const getLogoutUserController = async (req: Request, res: Response) => {
     });
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({ error: error });
+    console.error("Error in getLogoutUserController:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

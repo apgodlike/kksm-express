@@ -57,7 +57,8 @@ export const saveProfile = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Created" });
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Error in saveProfile:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -79,7 +80,8 @@ export const getProfile = async (req: Request, res: Response) => {
       res.status(404).json({ error: "User not found" });
     }
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Error in getProfile:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -95,7 +97,8 @@ export const getUserProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
   } catch (error) {
-    return res.status(500).json({ error });
+    console.error("Error in getUserProfile:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -124,7 +127,8 @@ export const getSuggestedProfiles = async (req: Request, res: Response) => {
       res.status(404).json({ error: "Profiles not found" });
     }
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Error in getSuggestedProfiles:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -135,7 +139,8 @@ export const postRegularSearchController = async (
   try {
     const response = await regularSearchProfileService(req.body);
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Error in postRegularSearchController:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
