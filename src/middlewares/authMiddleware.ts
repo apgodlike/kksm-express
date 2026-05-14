@@ -93,19 +93,11 @@ export const authenticateCompletedProfile = (
   res: Response,
   next: NextFunction
 ) => {
-  /*  // @ts-ignore
-  const isActive = req.user.isActive;
-
-  if (!isActive) {
-    return res.status(403).json({ error: "Profile Not Active" });
-  }
-
-  // @ts-ignore
-  const isCompleted = req.user.isProfileCompleted;
+  const isCompleted = req.user?.["isProfileCompleted"];
 
   if (!isCompleted) {
-    return res.status(403).json({ error: "Profile Not Compelted" });
+    return res.status(403).json({ error: "Profile not complete" });
   }
- */
+
   next();
 };
